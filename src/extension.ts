@@ -44,6 +44,11 @@ export function activate(context: vscode.ExtensionContext) {
 			sidebarProvider.handleCheckboxChange(item, newState);
 		}
 	});
+	treeView.onDidChangeVisibility((event) => {
+		if (event.visible) {
+		  checkPackages(sidebarProvider); // ✅ Refresh package data when the view becomes visible
+		}
+	  });
 
 	// help topic provider
 	context.subscriptions.push(
