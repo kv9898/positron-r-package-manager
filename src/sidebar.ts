@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
-import { checkPackages } from './refresh';
+import { refreshPackages } from './refresh';
 
 export interface RPackageInfo {
     name: string;
@@ -38,7 +38,7 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
             .then(() => {
 
                 // Reload full package list
-                checkPackages(this);
+                refreshPackages(this);
             });
     }
 }

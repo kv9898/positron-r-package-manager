@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as positron from 'positron';
-import { checkPackages } from './refresh';
+import { refreshPackages } from './refresh';
 import { SidebarProvider } from './sidebar';
 
 // This method is called when your extension is activated
@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// Automatically refresh packages once the R runtime is ready
 	positron.runtime.getForegroundSession().then(session => {
 		if (session?.runtimeMetadata.languageId === 'r') {
-			checkPackages(sidebarProvider);
+			refreshPackages(sidebarProvider);
 		}
 	});
 
@@ -27,8 +27,8 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "positron-r-package-manager" sees its sidebar refreshed!');
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('positron-r-package-manager.checkPackages', () => {
-			checkPackages(sidebarProvider);
+		vscode.commands.registerCommand('positron-r-package-manager.refreshPackages', () => {
+			refreshPackages(sidebarProvider);
 		})
 	);
 
@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	treeView.onDidChangeVisibility((event) => {
 		if (event.visible) {
-		  checkPackages(sidebarProvider); // ✅ Refresh package data when the view becomes visible
+		  refreshPackages(sidebarProvider); // ✅ Refresh package data when the view becomes visible
 		}
 	  });
 

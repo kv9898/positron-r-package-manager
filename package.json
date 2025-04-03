@@ -16,8 +16,9 @@
   "contributes": {
     "commands": [
       {
-        "command": "positron-r-package-manager.checkPackages",
-        "title": "Check packages"
+        "command": "positron-r-package-manager.refreshPackages",
+        "title": "Refresh R package information",
+        "icon": "$(refresh)" 
       }
     ],
     "viewsContainers": {
@@ -34,6 +35,15 @@
         {
           "id": "rPackageView",
           "name": "R Package Manager"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "positron-r-package-manager.refreshPackages",
+          "when": "view == rPackageView",
+          "group": "navigation"
         }
       ]
     }

@@ -5,7 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { SidebarProvider, RPackageInfo } from './sidebar';
 
-export function checkPackages(sidebarProvider: SidebarProvider) {
+export function refreshPackages(sidebarProvider: SidebarProvider) {
     // The code you place here will be executed every time your command is executed
     // Load Tidyverse package
     const tempFilePath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`).replace(/\\/g, '/');
