@@ -25,7 +25,7 @@
       "activitybar": [
         {
           "id": "positron-r-packages",
-          "title": "R Packages",
+          "title": "Packages",
           "icon": "$(book)"
         }
       ]
@@ -34,7 +34,7 @@
       "positron-r-packages": [
         {
           "id": "rPackageView",
-          "name": "R Package Manager"
+          "name": "Installed"
         }
       ]
     },

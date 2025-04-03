@@ -24,8 +24,11 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
     }
 
     getChildren(): Thenable<RPackageItem[]> {
-        const items = this.packages.map(pkg => new RPackageItem(pkg));
-        return Promise.resolve(items);
+        if (this.packages.length === 0) {
+            return Promise.resolve([new PlaceholderItem() as RPackageItem]);
+        }
+
+        return Promise.resolve(this.packages.map(pkg => new RPackageItem(pkg)));
     }
     handleCheckboxChange(item: RPackageItem, newState: vscode.TreeItemCheckboxState) {
         const isNowChecked = newState === vscode.TreeItemCheckboxState.Checked;
@@ -63,3 +66,24 @@ export class RPackageItem extends vscode.TreeItem {
     }
 }
 
+/**
+ * A placeholder TreeItem displayed in the R Packages sidebar
+ * when no package information is currently available.
+ *
+ * This is typically shown when the R runtime has not been started
+ * or the extension has not yet fetched package data.
+ *
+ * Displays an informative message with an info icon,
+ * and disables interactions like collapsibility and checkboxes.
+ */
+class PlaceholderItem extends vscode.TreeItem {
+    constructor() {
+        super(
+            'No R package information available yet. Try to refresh after an R session has been started.',
+            vscode.TreeItemCollapsibleState.None
+        );
+        this.iconPath = new vscode.ThemeIcon('info');
+        this.contextValue = 'placeholder';
+        this.tooltip = 'This view will populate after the R console is ready.';
+    }
+}
