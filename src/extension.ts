@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('positron-r-package-manager.openHelp', (pkgName: string) => {
 			const rCode = `help(package = "${pkgName}")`;
-			positron.runtime.executeCode('r', rCode, true, undefined, positron.RuntimeCodeExecutionMode.Interactive);
+			positron.runtime.executeCode('r', rCode, true, undefined, positron.RuntimeCodeExecutionMode.Silent);
 		})
 	);
 }
