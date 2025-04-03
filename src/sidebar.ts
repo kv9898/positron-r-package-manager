@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as positron from 'positron';
+import { checkPackages } from './refresh';
 
 export interface RPackageInfo {
     name: string;
@@ -25,17 +27,30 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
         const items = this.packages.map(pkg => new RPackageItem(pkg));
         return Promise.resolve(items);
     }
+    handleCheckboxChange(item: RPackageItem, newState: vscode.TreeItemCheckboxState) {
+        const isNowChecked = newState === vscode.TreeItemCheckboxState.Checked;
+
+        const code = isNowChecked
+            ? `library(${item.pkg.name})`
+            : `detach("package:${item.pkg.name}", unload = TRUE)`;
+
+        positron.runtime.executeCode('r', code, true, undefined, positron.RuntimeCodeExecutionMode.Interactive)
+            .then(() => {
+
+                // Reload full package list
+                checkPackages(this);
+            });
+    }
 }
 
 class RPackageItem extends vscode.TreeItem {
-    constructor(pkg: RPackageInfo) {
+    constructor(public pkg: RPackageInfo) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
         this.description = pkg.version;
         this.tooltip = `${pkg.name} - ${pkg.version}`;
         this.contextValue = 'rPackage';
 
-        // Checkbox indicator (VS Code 1.66+ only)
         this.checkboxState = pkg.loaded
             ? vscode.TreeItemCheckboxState.Checked
             : vscode.TreeItemCheckboxState.Unchecked;
