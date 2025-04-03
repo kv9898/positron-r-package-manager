@@ -43,17 +43,23 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
     }
 }
 
-class RPackageItem extends vscode.TreeItem {
+export class RPackageItem extends vscode.TreeItem {
     constructor(public pkg: RPackageInfo) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
         this.description = pkg.version;
-        this.tooltip = `${pkg.name} - ${pkg.version}`;
+        this.tooltip = `Click to view help for ${pkg.name}`;
         this.contextValue = 'rPackage';
 
         this.checkboxState = pkg.loaded
             ? vscode.TreeItemCheckboxState.Checked
             : vscode.TreeItemCheckboxState.Unchecked;
+
+        this.command = {
+            command: 'positron-r-package-manager.openHelp',
+            title: 'Open Package Help',
+            arguments: [pkg.name],
+        };
     }
 }
 
