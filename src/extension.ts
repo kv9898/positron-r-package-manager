@@ -39,7 +39,6 @@ export function activate(context: vscode.ExtensionContext) {
 		canSelectMany: false
 	});
 	treeView.onDidChangeCheckboxState((event) => {
-		vscode.window.showInformationMessage('Checkbox state changed');
 		for (const [item, newState] of event.items) {
 			sidebarProvider.handleCheckboxChange(item, newState);
 		}
