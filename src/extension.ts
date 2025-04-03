@@ -1,7 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as positron from 'positron';
+import { checkPackages } from './refresh';
+import { SidebarProvider } from './sidebar';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -14,23 +15,17 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('positron-r-package-manager.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from positron-r-package-manager!');
-	});
 
-	context.subscriptions.push(disposable);
+	const sidebarProvider = new SidebarProvider();
 
-	const disposable2 = vscode.commands.registerCommand('positron-r-package-manager.loadTidyverse', () => {
-		// The code you place here will be executed every time your command is executed
-		// Load Tidyverse package
-		const code = 'library(tidyverse)';
-		positron.runtime.executeCode('r', code, true);
-	});
+	context.subscriptions.push(
+	  vscode.commands.registerCommand('positron-r-package-manager.checkPackages', () => {
+		checkPackages(sidebarProvider);
+	  })
+	);
 	
-	context.subscriptions.push(disposable2);
+	vscode.window.registerTreeDataProvider("rPackageView", sidebarProvider);
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

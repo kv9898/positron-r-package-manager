@@ -9,19 +9,34 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onTerminalOpen"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "positron-r-package-manager.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "positron-r-package-manager.loadTidyverse",
-        "title": "Load Tidyverse"
+        "command": "positron-r-package-manager.checkPackages",
+        "title": "Check packages"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "positron-r-packages",
+          "title": "R Packages",
+          "icon": "$(book)"
+        }
+      ]
+    },
+    "views": {
+      "positron-r-packages": [
+        {
+          "id": "rPackageView",
+          "name": "R Package Manager"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",
