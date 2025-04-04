@@ -5,6 +5,7 @@ import { refreshPackages } from './refresh';
 export interface RPackageInfo {
     name: string;
     version: string;
+    title: string;
     loaded: boolean;
 }
 
@@ -51,7 +52,8 @@ export class RPackageItem extends vscode.TreeItem {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
         this.description = pkg.version;
-        this.tooltip = `Click to view help for ${pkg.name}`;
+        this.tooltip = `${pkg.title}`;
+
         this.contextValue = 'rPackage';
 
         this.checkboxState = pkg.loaded

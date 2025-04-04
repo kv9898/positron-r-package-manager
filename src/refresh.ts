@@ -14,8 +14,13 @@ export function refreshPackages(sidebarProvider: SidebarProvider) {
 
     const rCode = `
     jsonlite::write_json(
-      within(as.data.frame(installed.packages()[, c("Package", "Version")]),
-             loaded <- Package %in% loadedNamespaces()),
+      within(
+        as.data.frame(installed.packages()[, c("Package", "Version")]),
+        {
+            Title <- vapply(Package, function(pkg) packageDescription(pkg, fields = "Title"), character(1))
+            Loaded <- Package %in% loadedNamespaces()
+        }
+      ),
       path = "${tempFilePath}",
       auto_unbox = TRUE
     )
@@ -24,14 +29,14 @@ export function refreshPackages(sidebarProvider: SidebarProvider) {
     positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent).then(() => {
         try {
             const contents = fs.readFileSync(tempFilePath, 'utf-8');
-            const parsed: { Package: string; Version: string; loaded: boolean }[] = JSON.parse(contents);
+            const parsed: { Package: string; Version: string; Loaded: boolean; Title: string }[] = JSON.parse(contents);
 
-            // Count loaded packages
-            const loadedCount = parsed.filter(pkg => pkg.loaded).length;
-            const totalCount = parsed.length;
+            // // Count loaded packages
+            // const loadedCount = parsed.filter(pkg => pkg.loaded).length;
+            // const totalCount = parsed.length;
 
-            // ✅ Show result
-            vscode.window.showInformationMessage(`✔️ ${loadedCount} loaded out of ${totalCount} installed R packages.`);
+            // // Show result
+            // vscode.window.showInformationMessage(`✔️ ${loadedCount} loaded out of ${totalCount} installed R packages.`);
 
             // Optional: clean up
             fs.unlinkSync(tempFilePath);
@@ -39,7 +44,8 @@ export function refreshPackages(sidebarProvider: SidebarProvider) {
             const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
                 name: pkg.Package,
                 version: pkg.Version,
-                loaded: pkg.loaded
+                title: pkg.Title,
+                loaded: pkg.Loaded
               }));
 
             sidebarProvider.refresh(pkgInfo);
