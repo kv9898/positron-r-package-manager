@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
 
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+
 import { RPackageItem, SidebarProvider } from './sidebar';
 import { refreshPackages } from './refresh';
 
@@ -10,35 +14,35 @@ import { refreshPackages } from './refresh';
  */
 export async function installPackages(sidebarProvider: SidebarProvider): Promise<void> {
     const input = await vscode.window.showInputBox({
-      title: 'Install R Packages',
-      prompt: 'Packages (separate multiple with space or comma)',
-      placeHolder: 'e.g. ggplot2 dplyr tidyr',
-      ignoreFocusOut: true,
+        title: 'Install R Packages',
+        prompt: 'Packages (separate multiple with space or comma)',
+        placeHolder: 'e.g. ggplot2 dplyr tidyr',
+        ignoreFocusOut: true,
     });
-  
+
     if (!input?.trim()) {
-      return;
+        return;
     }
-  
+
     const packages = input
-      .split(/[\s,]+/)
-      .filter(pkg => pkg.length)
-      .map(pkg => `"${pkg}"`)
-      .join(', ');
-  
+        .split(/[\s,]+/)
+        .filter(pkg => pkg.length)
+        .map(pkg => `"${pkg}"`)
+        .join(', ');
+
     const rCode = `install.packages(c(${packages}))`;
-  
+
     positron.runtime.executeCode(
-      'r',
-      rCode,
-      true,
-      undefined,
-      positron.RuntimeCodeExecutionMode.Interactive
+        'r',
+        rCode,
+        true,
+        undefined,
+        positron.RuntimeCodeExecutionMode.Interactive
     ).then(() => {
-      vscode.window.showInformationMessage(`✅ Installed R package(s): ${input}`);
-      refreshPackages(sidebarProvider);
+        vscode.window.showInformationMessage(`✅ Installed R package(s): ${input}`);
+        refreshPackages(sidebarProvider);
     });
-  }
+}
 
 export function uninstallPackage(item: RPackageItem, sidebarProvider: SidebarProvider) {
     vscode.window.showWarningMessage(`Uninstall ${item.pkg.name}?`, 'Yes', 'No')
@@ -63,4 +67,67 @@ export function uninstallPackage(item: RPackageItem, sidebarProvider: SidebarPro
                 });
             }
         });
+}
+
+export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
+    const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`).replace(/\\/g, '/');
+
+    const rCode = `
+  jsonlite::write_json(
+    as.data.frame(old.packages()[, c("Package", "Installed", "ReposVer")]),
+    path = "${tmpPath}",
+    auto_unbox = TRUE
+  )
+  `.trim();
+
+    // Fetch the list of updatable packages
+    await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent);
+
+    let parsed: { Package: string; Installed: string; ReposVer: string }[];
+
+    try {
+        const content = fs.readFileSync(tmpPath, 'utf-8');
+        parsed = JSON.parse(content);
+        fs.unlinkSync(tmpPath);
+    } catch (err) {
+        vscode.window.showErrorMessage('Failed to retrieve updatable packages.');
+        return;
+    }
+
+    if (!parsed || parsed.length === 0) {
+        vscode.window.showInformationMessage('All packages are up to date 🎉');
+        return;
+    }
+
+    const items = parsed.map(pkg => ({
+        label: `${pkg.Package}  (${pkg.Installed} → ${pkg.ReposVer})`,
+        picked: true,
+        pkg: pkg.Package
+    }));
+
+    const selected = await vscode.window.showQuickPick(items, {
+        title: 'Select R packages to update',
+        canPickMany: true,
+        placeHolder: 'Check/uncheck packages to update',
+        ignoreFocusOut: true
+    });
+
+    if (!selected || selected.length === 0) {
+        vscode.window.showInformationMessage('No packages selected for update.');
+        return;
+    }
+
+    const updateList = selected.map(item => `"${item.pkg}"`).join(', ');
+    const updateCode = `install.packages(c(${updateList}))`;
+
+    positron.runtime.executeCode(
+        'r',
+        updateCode,
+        true,
+        undefined,
+        positron.RuntimeCodeExecutionMode.Interactive
+    ).then(() => {
+        vscode.window.showInformationMessage(`✅ Updated ${selected.length} R package(s)`);
+        refreshPackages(sidebarProvider);
+    });
 }

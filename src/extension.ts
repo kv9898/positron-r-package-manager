@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as positron from 'positron';
 import { refreshPackages } from './refresh';
 import { SidebarProvider, RPackageItem } from './sidebar';
-import { installPackages, uninstallPackage } from './install';
+import { installPackages, uninstallPackage, updatePackages } from './install';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -78,9 +78,9 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('positron-r-package-manager.uninstallPackage', (item: RPackageItem) => {
 			uninstallPackage(item, sidebarProvider);
 		}),
-		// update packages (incomplete)
+		// update packages
 		vscode.commands.registerCommand('positron-r-package-manager.updatePackages', () => {
-			vscode.window.showInformationMessage('Update Packages (not implemented)');
+			updatePackages(sidebarProvider);
 		})
 	);
 }
