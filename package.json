@@ -23,7 +23,7 @@
       {
         "command": "positron-r-package-manager.updatePackages",
         "title": "R: Update Installed Packages",
-        "icon": "$(sync)"
+        "icon": "$(arrow-circle-up)"
       },
       {
         "command": "positron-r-package-manager.refreshPackages",
