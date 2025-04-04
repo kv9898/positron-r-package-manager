@@ -1,17 +1,32 @@
 {
   "name": "positron-r-package-manager",
-  "displayName": "positron-r-package-manager",
-  "description": "Mimic RStudio's package management capabilities.",
+  "displayName": "Positron R Package Manager",
+  "description": "Mimic RStudio's package management capabilities for Positron.",
   "version": "0.0.1",
+  "publisher": "kv9898",
+  "extensionKind": [
+    "workspace"
+  ],
   "engines": {
     "vscode": "^1.98.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Data Science",
+    "Visualization"
   ],
-  "activationEvents": [
-    "onTerminalOpen"
+  "keywords": [
+    "R",
+    "package",
+    "manager",
+    "Positron",
+    "ggplot2",
+    "dplyr",
+    "install",
+    "update",
+    "CRAN"
   ],
+  "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -54,7 +69,8 @@
       "positron-r-packages": [
         {
           "id": "rPackageView",
-          "name": "Installed"
+          "name": "Installed",
+          "icon": "$(book)"
         }
       ]
     },
