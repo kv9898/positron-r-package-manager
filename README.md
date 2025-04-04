@@ -20,7 +20,7 @@ Manage your R extensions from within [Positron](https://positron.posit.co/) — 
 
 ## 🛠 Requirements
 
-- Positron version `2025.04.0-173` or later
+- Positron version `2025.02.0-79` or later
 - R installed and working inside Positron
 - This extension must run in the **workspace** (remote/WSL/container supported ✅)
 
