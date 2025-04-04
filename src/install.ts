@@ -103,12 +103,18 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`).replace(/\\/g, '/');
 
     const rCode = `
-  jsonlite::write_json(
-    as.data.frame(old.packages()[, c("Package", "Installed", "ReposVer")]),
-    path = "${tmpPath}",
-    auto_unbox = TRUE
-  )
-  `.trim();
+    if (is.null(old.packages())) {
+      jsonlite::write_json(NULL, path = "${tmpPath}", auto_unbox = TRUE)
+    } else {
+      pkgs <- old.packages()
+      df <- data.frame(
+        Package = rownames(pkgs),
+        Installed = pkgs[, "Installed"],
+        ReposVer = pkgs[, "ReposVer"]
+      )
+      jsonlite::write_json(df, path = "${tmpPath}", auto_unbox = TRUE)
+    }
+    `.trim();
 
     // Fetch the list of updatable packages
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent);
@@ -117,15 +123,22 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
 
     try {
         const content = fs.readFileSync(tmpPath, 'utf-8');
-        parsed = JSON.parse(content);
         fs.unlinkSync(tmpPath);
+
+        if (!content || content.trim() === '{}' ||  content.trim() === 'null') {
+            vscode.window.showInformationMessage('✅ All R packages are up to date!');
+            return;
+        }
+
+        parsed = JSON.parse(content);
+
     } catch (err) {
         vscode.window.showErrorMessage('Failed to retrieve updatable packages.');
         return;
     }
 
     if (!parsed || parsed.length === 0) {
-        vscode.window.showInformationMessage('All packages are up to date 🎉');
+        vscode.window.showInformationMessage('✅ All R packages are up to date!');
         return;
     }
 
