@@ -4,6 +4,10 @@
   "description": "Mimic RStudio's package management capabilities for Positron.",
   "version": "0.0.1",
   "publisher": "kv9898",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kv9898/positron-r-package-manager.git"
+  },
   "icon": "resources/icon.png",
   "license": "MIT",
   "extensionKind": [
