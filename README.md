@@ -2,6 +2,8 @@
 
 Manage your R extensions from within [Positron](https://positron.posit.co/) — the RStudio-style package manager for the modern data science IDE.
 
+<img src="https://github.com/user-attachments/assets/68ae31ca-0e6d-4c90-a783-132408dee896" alt="Positron R Package Sidebar" width="300"/>
+
 ---
 
 ## 🚀 Features
