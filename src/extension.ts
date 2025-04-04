@@ -49,11 +49,32 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	  });
 
-	// help topic provider
 	context.subscriptions.push(
 		vscode.commands.registerCommand('positron-r-package-manager.openHelp', (pkgName: string) => {
 			const rCode = `help(package = "${pkgName}")`;
 			positron.runtime.executeCode('r', rCode, true, undefined, positron.RuntimeCodeExecutionMode.Silent);
+		}),
+
+
+		// search package provider
+		vscode.commands.registerCommand('positron-r-package-manager.searchPackages', async () => {
+			const input = await vscode.window.showInputBox({
+				prompt: 'Search R packages — press Esc to clear filter, Enter to apply',
+				value: sidebarProvider.getFilter(),
+				placeHolder: 'e.g. plot',
+			});
+
+			sidebarProvider.setFilter(input ?? '');
+
+		}),
+
+		// install packages (incomplete)
+		vscode.commands.registerCommand('positron-r-package-manager.installPackage', () => {
+			vscode.window.showInformationMessage('Install Package (not implemented)');
+		}),
+		// update packages (incomplete)
+		vscode.commands.registerCommand('positron-r-package-manager.updatePackages', () => {
+			vscode.window.showInformationMessage('Update Packages (not implemented)');
 		})
 	);
 }

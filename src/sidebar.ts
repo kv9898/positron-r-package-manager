@@ -10,6 +10,7 @@ export interface RPackageInfo {
 }
 
 export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
+    private filterText: string = '';
     private _onDidChangeTreeData: vscode.EventEmitter<RPackageItem | undefined | void> = new vscode.EventEmitter();
     readonly onDidChangeTreeData: vscode.Event<RPackageItem | undefined | void> = this._onDidChangeTreeData.event;
 
@@ -25,11 +26,24 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
     }
 
     getChildren(): Thenable<RPackageItem[]> {
-        if (this.packages.length === 0) {
-            return Promise.resolve([new PlaceholderItem() as RPackageItem]);
+        let filtered = this.packages;
+
+        if (this.filterText.trim()) {
+            const keyword = this.filterText.toLowerCase();
+            filtered = this.packages.filter(pkg =>
+                pkg.name.toLowerCase().includes(keyword) ||
+                pkg.title.toLowerCase().includes(keyword)
+            );
         }
 
-        return Promise.resolve(this.packages.map(pkg => new RPackageItem(pkg)));
+        if (filtered.length === 0) {
+            return Promise.resolve([
+                new PlaceholderItem("No R package information available yet.") as RPackageItem,
+                new PlaceholderItem("Try to refresh after R starts or clear search.") as RPackageItem
+            ]);
+        }
+
+        return Promise.resolve(filtered.map(pkg => new RPackageItem(pkg)));
     }
     handleCheckboxChange(item: RPackageItem, newState: vscode.TreeItemCheckboxState) {
         const isNowChecked = newState === vscode.TreeItemCheckboxState.Checked;
@@ -44,6 +58,14 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
                 // Reload full package list
                 refreshPackages(this);
             });
+    }
+
+    getFilter(): string {
+        return this.filterText || '';
+    }
+    setFilter(filterText: string) {
+        this.filterText = filterText;
+        refreshPackages(this); // re-render the tree
     }
 }
 
@@ -79,13 +101,9 @@ export class RPackageItem extends vscode.TreeItem {
  * and disables interactions like collapsibility and checkboxes.
  */
 class PlaceholderItem extends vscode.TreeItem {
-    constructor() {
-        super(
-            'No R package information available yet. Try to refresh after an R session has been started.',
-            vscode.TreeItemCollapsibleState.None
-        );
+    constructor(message: string) {
+        super(message, vscode.TreeItemCollapsibleState.None);
         this.iconPath = new vscode.ThemeIcon('info');
         this.contextValue = 'placeholder';
-        this.tooltip = 'This view will populate after the R console is ready.';
     }
 }
