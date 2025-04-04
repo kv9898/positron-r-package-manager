@@ -21,6 +21,11 @@
         "icon": "$(desktop-download)"
       },
       {
+        "command": "positron-r-package-manager.uninstallPackage",
+        "title": "Uninstall Package",
+        "icon": "$(trash)"
+      },
+      {
         "command": "positron-r-package-manager.updatePackages",
         "title": "R: Update Installed Packages",
         "icon": "$(arrow-circle-up)"
@@ -28,7 +33,7 @@
       {
         "command": "positron-r-package-manager.refreshPackages",
         "title": "R: Refresh package information",
-        "icon": "$(refresh)" 
+        "icon": "$(refresh)"
       },
       {
         "command": "positron-r-package-manager.searchPackages",
@@ -74,6 +79,13 @@
           "command": "positron-r-package-manager.refreshPackages",
           "when": "view == rPackageView",
           "group": "navigation@100"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "positron-r-package-manager.uninstallPackage",
+          "when": "view == rPackageView && viewItem == rPackage",
+          "group": "inline@999"
         }
       ]
     }
