@@ -1,25 +1,73 @@
-# Positron R Package Manager README
+# 📦 Positron R Package Manager
 
-This is a Positron-only extenison.
+Manage your R extensions from within [Positron](https://positron.posit.co/) — the RStudio-style package manager for the modern data science IDE.
 
-## Features
+---
 
-sth
+## 🚀 Features
 
-## Requirements
+- ✅ View all **installed R packages** in a tidy sidebar
+- ✅ Check which packages are **loaded** (like RStudio’s “Packages” tab)
+- ✅ **Install** one or multiple packages (space/comma-separated)
+- ✅ **Update** outdated packages with version preview and multi-select
+- ✅ **Uninstall** packages with a single click
+- ✅ 🔍 **Search** by name or title (fuzzy search coming soon)
+- ✅ Checkbox toggling to load/unload
 
-sth
+---
 
-## Extension Settings
+## 🛠 Requirements
 
-A lot
+- Positron version `2025.04.0-173` or later
+- R installed and working inside Positron
+- This extension must run in the **workspace** (remote/WSL/container supported ✅)
 
-## Known Issues
+---
 
-None
+## ⚙️ Extension Settings
 
-## Release Notes
+This extension currently has no user-facing settings — it's fully automatic.
 
-### 1.0.0
+---
 
-Initial release
+## 📂 Commands
+
+You can access these from the sidebar or Command Palette:
+
+| Command | Description |
+|--------|-------------|
+| `R: Install Packages` | Install one or more packages by name |
+| `R: Update Installed Packages` | Update selected outdated packages |
+| `R: Uninstall Package` | Uninstall a selected package |
+| `R: Refresh package information` | Reload the package list from the current R session |
+| `R: Search for installed packages` | Filter package list by name/title |
+
+---
+
+## ⚠️ Known Issues
+
+- Packages installed or detached manually via console are not immediately reflected — use **Refresh** to sync.
+- The extension currently uses `install.packages()` which installs to the default library path.
+
+---
+
+## 🙏 Attribution
+
+Created by [kv9898](https://github.com/kv9898)  
+Licensed under the [MIT License](./LICENSE)
+
+---
+
+## 💡 Future Ideas
+
+- [ ] Show package descriptions inline
+- [ ] Indicate base/system packages visually
+- [ ] Support CRAN task views
+- [ ] Fuzzy search (coming soon)
+- [ ] Install from GitHub or Bioconductor
+
+---
+
+## 🧠 Why Positron?
+
+Because it’s time for a modern, polyglot, VS Code-based Data Science IDE — and this extension brings one of RStudio's most beloved panels to the future.
