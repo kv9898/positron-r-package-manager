@@ -5,6 +5,7 @@
   "version": "0.0.1",
   "publisher": "kv9898",
   "icon": "resources/icon.png",
+  "license": "MIT",
   "extensionKind": [
     "workspace"
   ],
