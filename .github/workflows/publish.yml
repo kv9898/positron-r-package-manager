@@ -1,0 +1,41 @@
+name: Publish Extension
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # - name: 📦 Install dependencies
+      #   run: npm install
+
+      # - name: 🔧 Build extension
+      #   run: npm run package
+
+      # - name: 📦 Package extension with vsce
+      #   run: npx vsce package
+
+      - name: 🚀 Publish to Open VSX
+        uses: HaaLeo/publish-vscode-extension@v2
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}
+
+      - name: 📝 Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
