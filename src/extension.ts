@@ -45,11 +45,12 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	treeView.onDidChangeVisibility((event) => {
 		if (event.visible) {
-		  refreshPackages(sidebarProvider); // ✅ Refresh package data when the view becomes visible
+			refreshPackages(sidebarProvider); // ✅ Refresh package data when the view becomes visible
 		}
-	  });
+	});
 
 	context.subscriptions.push(
+		// help topic provider
 		vscode.commands.registerCommand('positron-r-package-manager.openHelp', (pkgName: string) => {
 			const rCode = `help(package = "${pkgName}")`;
 			positron.runtime.executeCode('r', rCode, true, undefined, positron.RuntimeCodeExecutionMode.Silent);

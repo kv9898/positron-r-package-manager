@@ -16,9 +16,24 @@
   "contributes": {
     "commands": [
       {
+        "command": "positron-r-package-manager.installPackage",
+        "title": "R: Install a Package",
+        "icon": "$(desktop-download)"
+      },
+      {
+        "command": "positron-r-package-manager.updatePackages",
+        "title": "R: Update Installed Packages",
+        "icon": "$(sync)"
+      },
+      {
         "command": "positron-r-package-manager.refreshPackages",
-        "title": "Refresh R package information",
+        "title": "R: Refresh package information",
         "icon": "$(refresh)" 
+      },
+      {
+        "command": "positron-r-package-manager.searchPackages",
+        "title": "R: Search for installed packages",
+        "icon": "$(search)"
       }
     ],
     "viewsContainers": {
@@ -41,9 +56,24 @@
     "menus": {
       "view/title": [
         {
+          "command": "positron-r-package-manager.installPackage",
+          "when": "view == rPackageView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "positron-r-package-manager.updatePackages",
+          "when": "view == rPackageView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "positron-r-package-manager.searchPackages",
+          "when": "view == rPackageView",
+          "group": "navigation@99"
+        },
+        {
           "command": "positron-r-package-manager.refreshPackages",
           "when": "view == rPackageView",
-          "group": "navigation"
+          "group": "navigation@100"
         }
       ]
     }
