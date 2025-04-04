@@ -103,64 +103,38 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`).replace(/\\/g, '/');
 
     const rCode = `
-    if (is.null(old.packages())) {
-      jsonlite::write_json(NULL, path = "${tmpPath}", auto_unbox = TRUE)
-    } else {
-      pkgs <- old.packages()
-      df <- data.frame(
-        Package = rownames(pkgs),
-        Installed = pkgs[, "Installed"],
-        ReposVer = pkgs[, "ReposVer"]
-      )
-      jsonlite::write_json(df, path = "${tmpPath}", auto_unbox = TRUE)
-    }
-    `.trim();
+  if (is.null(old.packages())) {
+    jsonlite::write_json(list(), path = "${tmpPath}", auto_unbox = TRUE)
+  } else {
+    pkgs <- old.packages()
+    df <- data.frame(
+      Package = rownames(pkgs),
+      Installed = pkgs[, "Installed"],
+      ReposVer = pkgs[, "ReposVer"]
+    )
+    jsonlite::write_json(df, path = "${tmpPath}", auto_unbox = TRUE)
+  }
+  `.trim();
 
-    // Fetch the list of updatable packages
+    // Run R code to dump updates
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent);
 
-    let parsed: { Package: string; Installed: string; ReposVer: string }[];
-
-    try {
-        const content = fs.readFileSync(tmpPath, 'utf-8');
-        fs.unlinkSync(tmpPath);
-
-        if (!content || content.trim() === '{}' ||  content.trim() === 'null') {
-            vscode.window.showInformationMessage('✅ All R packages are up to date!');
-            return;
-        }
-
-        parsed = JSON.parse(content);
-
-    } catch (err) {
-        vscode.window.showErrorMessage('Failed to retrieve updatable packages.');
-        return;
-    }
-
-    if (!parsed || parsed.length === 0) {
+    // Try to parse result from file
+    const parsed = parsePackageUpdateJson(tmpPath);
+    if (!parsed) {
         vscode.window.showInformationMessage('✅ All R packages are up to date!');
         return;
     }
 
-    const items = parsed.map(pkg => ({
-        label: `${pkg.Package}  (${pkg.Installed} → ${pkg.ReposVer})`,
-        picked: true,
-        pkg: pkg.Package
-    }));
-
-    const selected = await vscode.window.showQuickPick(items, {
-        title: 'Select R packages to update',
-        canPickMany: true,
-        placeHolder: 'Check/uncheck packages to update',
-        ignoreFocusOut: true
-    });
-
+    // Prompt user to select which packages to update
+    const selected = await promptPackageUpdateSelection(parsed);
     if (!selected || selected.length === 0) {
         vscode.window.showInformationMessage('No packages selected for update.');
         return;
     }
 
-    const updateList = selected.map(item => `"${item.pkg}"`).join(', ');
+    // Execute update for selected packages
+    const updateList = selected.map(pkg => `"${pkg.Package}"`).join(', ');
     const updateCode = `install.packages(c(${updateList}))`;
 
     positron.runtime.executeCode(
@@ -172,5 +146,43 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     ).then(() => {
         vscode.window.showInformationMessage(`✅ Updated ${selected.length} R package(s)`);
         refreshPackages(sidebarProvider);
+    });
+}
+
+function parsePackageUpdateJson(tmpPath: string): { Package: string; Installed: string; ReposVer: string }[] | null {
+    try {
+        const content = fs.readFileSync(tmpPath, 'utf-8').trim();
+        fs.unlinkSync(tmpPath);
+
+        if (content === '{}' || content === '[]' || content === 'null') {
+            return null;
+        }
+
+        const parsed = JSON.parse(content);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            return null;
+        }
+
+        return parsed;
+    } catch (err) {
+        vscode.window.showErrorMessage('❌ Failed to retrieve updatable packages.');
+        return null;
+    }
+}
+
+async function promptPackageUpdateSelection(
+    parsed: { Package: string; Installed: string; ReposVer: string }[]
+): Promise<{ Package: string }[] | undefined> {
+    const items = parsed.map(pkg => ({
+        label: `${pkg.Package}  (${pkg.Installed} → ${pkg.ReposVer})`,
+        picked: true,
+        Package: pkg.Package
+    }));
+
+    return await vscode.window.showQuickPick(items, {
+        title: 'Select R packages to update',
+        canPickMany: true,
+        placeHolder: 'Check/uncheck packages to update',
+        ignoreFocusOut: true
     });
 }
