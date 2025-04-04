@@ -67,6 +67,10 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
         this.filterText = filterText;
         refreshPackages(this); // re-render the tree
     }
+
+    getPackages(): RPackageInfo[] {
+        return this.packages;
+    }
 }
 
 export class RPackageItem extends vscode.TreeItem {

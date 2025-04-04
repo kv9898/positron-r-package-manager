@@ -44,29 +44,59 @@ export async function installPackages(sidebarProvider: SidebarProvider): Promise
     });
 }
 
-export function uninstallPackage(item: RPackageItem, sidebarProvider: SidebarProvider) {
-    vscode.window.showWarningMessage(`Uninstall ${item.pkg.name}?`, 'Yes', 'No')
-        .then(response => {
-            if (response === 'Yes') {
-                const rCode = `
+export async function uninstallPackage(item: RPackageItem | undefined, sidebarProvider: SidebarProvider): Promise<void> {
+    if (!item) {
+        const all = sidebarProvider.getPackages?.();
+        if (!all || all.length === 0) {
+            vscode.window.showInformationMessage('No R packages available to uninstall.');
+            return;
+        }
+
+        const selection = await vscode.window.showQuickPick(
+            all.map(pkg => ({
+                label: `${pkg.name} ${pkg.version}`,
+                description: pkg.title,
+                pkg
+            })),
+            {
+                title: 'Select a package to uninstall',
+                placeHolder: 'Choose a package',
+                ignoreFocusOut: true
+            }
+        );
+
+        if (!selection) { return; };
+
+        item = {
+            pkg: selection.pkg
+        } as RPackageItem;
+    }
+
+    const confirm = await vscode.window.showWarningMessage(
+        `Uninstall ${item.pkg.name}?`,
+        { modal: true },
+        'Yes'
+    );
+
+    if (confirm !== 'Yes') { return; };
+
+    const rCode = `
   if ("${item.pkg.name}" %in% loadedNamespaces()) {
     detach("package:${item.pkg.name}", unload = TRUE)
   }
   remove.packages("${item.pkg.name}")
   `.trim();
 
-                positron.runtime.executeCode(
-                    'r',
-                    rCode,
-                    true,
-                    undefined,
-                    positron.RuntimeCodeExecutionMode.Interactive
-                ).then(() => {
-                    vscode.window.showInformationMessage(`Uninstalled R package: ${item.pkg.name}`);
-                    refreshPackages(sidebarProvider);
-                });
-            }
-        });
+    positron.runtime.executeCode(
+        'r',
+        rCode,
+        true,
+        undefined,
+        positron.RuntimeCodeExecutionMode.Interactive
+    ).then(() => {
+        vscode.window.showInformationMessage(`✅ Uninstalled ${item!.pkg.name}`);
+        refreshPackages(sidebarProvider);
+    });
 }
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {

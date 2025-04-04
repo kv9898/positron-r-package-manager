@@ -22,7 +22,7 @@
       },
       {
         "command": "positron-r-package-manager.uninstallPackage",
-        "title": "Uninstall Package",
+        "title": "R: Uninstall Package",
         "icon": "$(trash)"
       },
       {
