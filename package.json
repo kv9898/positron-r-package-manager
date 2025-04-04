@@ -16,8 +16,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "positron-r-package-manager.installPackage",
-        "title": "R: Install a Package",
+        "command": "positron-r-package-manager.installPackages",
+        "title": "R: Install Packages",
         "icon": "$(desktop-download)"
       },
       {
@@ -61,7 +61,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "positron-r-package-manager.installPackage",
+          "command": "positron-r-package-manager.installPackages",
           "when": "view == rPackageView",
           "group": "navigation@1"
         },
