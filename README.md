@@ -21,6 +21,7 @@ Manage your R extensions from within [Positron](https://positron.posit.co/) — 
 ## 🛠 Requirements
 
 - Positron version `2025.02.0-79` or later
+- [`jsonlite`](https://cran.r-project.org/package=jsonlite) must be installed in the R runtime (used for data exchange).
 - R installed and working inside Positron
 - This extension must run in the **workspace** (remote/WSL/container supported ✅)
 
