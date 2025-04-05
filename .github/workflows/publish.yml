@@ -37,7 +37,13 @@ jobs:
 
       - name: 🏷 Extract version
         id: extract
-        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: 📤 Upload .vsix artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-vsix
+          path: "*.vsix"
 
   publish_ovsx:
     name: 🚀 Publish to Open VSX
@@ -48,6 +54,11 @@ jobs:
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
+
+      - name: 📥 Download .vsix artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-vsix
 
       - name: 📦 Publish extension to Open VSX
         uses: HaaLeo/publish-vscode-extension@v2
@@ -63,6 +74,11 @@ jobs:
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
+
+      - name: 📥 Download .vsix artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-vsix
 
       - name: 📤 Upload to GitHub Releases
         uses: softprops/action-gh-release@v2
