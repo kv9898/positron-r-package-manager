@@ -40,6 +40,7 @@
       "properties": {
         "positron-r-package-manager.filterOutdatedIfUpToDateElsewhere": {
           "type": "boolean",
+          "scope": "machine-overridable",
           "default": true,
           "description": "Filter out outdated packages if an up-to-date version is installed in another library path during updates."
         }

@@ -9,8 +9,5 @@ export function getFilterRedundant(): boolean {
         'positron-r-package-manager',
         vscode.Uri.file(vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? "")
     );
-    // const inspect = config.inspect<boolean>('filterOutdatedIfUpToDateElsewhere');
-    // vscode.window.showInformationMessage(`workspace Folder: ${inspect?.workspaceFolderValue}
-    //     \nworkspace: ${inspect?.workspaceValue}`);
     return config.get<boolean>('filterOutdatedIfUpToDateElsewhere', true);
 }

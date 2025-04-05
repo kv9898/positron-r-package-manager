@@ -130,7 +130,6 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
 }
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
-    vscode.window.showInformationMessage(`filter? ${getFilterRedundant()}`);
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`).replace(/\\/g, '/');
 
     const rCode = `
