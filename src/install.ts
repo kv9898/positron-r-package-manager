@@ -54,8 +54,8 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
 
         const selection = await vscode.window.showQuickPick(
             all.map(pkg => ({
-                label: `${pkg.name} ${pkg.version}`,
-                description: pkg.title,
+                label: `${pkg.name} ${pkg.version} (${pkg.locationtype})`,
+                description: `(${pkg.libpath}) ${pkg.title}`,
                 pkg
             })),
             {
@@ -73,7 +73,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
     }
 
     const confirm = await vscode.window.showWarningMessage(
-        `Uninstall ${item.pkg.name}?`,
+        `Uninstall R package ${item.pkg.name} ${item.pkg.version} (${item.pkg.locationtype})?`,
         { modal: true },
         'Yes'
     );
@@ -84,7 +84,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
   if ("${item.pkg.name}" %in% loadedNamespaces()) {
     detach("package:${item.pkg.name}", unload = TRUE)
   }
-  remove.packages("${item.pkg.name}")
+  remove.packages("${item.pkg.name}", lib="${item.pkg.libpath}")
   `.trim();
 
     positron.runtime.executeCode(
