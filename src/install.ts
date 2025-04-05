@@ -7,6 +7,7 @@ import * as path from 'path';
 
 import { RPackageItem, SidebarProvider } from './sidebar';
 import { refreshPackages } from './refresh';
+import { stripAnsi } from './utils';
 
 /**
  * Prompts the user to enter one or more R packages to install, with an option to include dependencies.
@@ -87,16 +88,45 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
   remove.packages("${item.pkg.name}", lib="${item.pkg.libpath}")
   `.trim();
 
+    const observer: positron.runtime.ExecutionObserver = {
+        onError: (error: string) => {
+            error = stripAnsi(error);
+            vscode.window.showErrorMessage(`Error while uninstalling ${item!.pkg.name}: ${error}`);
+            refreshPackages(sidebarProvider);
+        },
+        onFailed: (error: Error) => {
+            const message = stripAnsi(error.message);
+            vscode.window.showErrorMessage(`Error while uninstalling ${item!.pkg.name}: ${message}`);
+            refreshPackages(sidebarProvider);
+        },
+    };
     positron.runtime.executeCode(
         'r',
         rCode,
         true,
         undefined,
-        positron.RuntimeCodeExecutionMode.Interactive
-    ).then(() => {
-        vscode.window.showInformationMessage(`✅ Uninstalled ${item!.pkg.name}`);
-        refreshPackages(sidebarProvider);
-    });
+        positron.RuntimeCodeExecutionMode.Interactive,
+        undefined,
+        observer
+    ).then(
+        () => {
+            refreshPackages(sidebarProvider).then(() => {
+                const packages = sidebarProvider.getPackages?.() || [];
+
+                const stillExists = packages.some(pkg =>
+                    pkg.name === item!.pkg.name && pkg.libpath === item!.pkg.libpath
+                );
+
+                if (stillExists) {
+                    vscode.window.showErrorMessage(`Failed to uninstall ${item!.pkg.name} from ${item!.pkg.libpath}`);
+                } else {
+                    vscode.window.showInformationMessage(`✅ Uninstalled ${item!.pkg.name}`);
+                }
+            }).catch(err => {
+                vscode.window.showErrorMessage(`Error refreshing packages: ${err}`);
+            });
+        },
+    );
 }
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
