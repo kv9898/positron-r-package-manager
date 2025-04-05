@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { RPackageItem, SidebarProvider } from './sidebar';
 import { refreshPackages } from './refresh';
-import { stripAnsi } from './utils';
+import { stripAnsi, getFilterRedundant } from './utils';
 
 /**
  * Prompts the user to enter one or more R packages to install, with an option to include dependencies.
@@ -130,6 +130,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
 }
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
+    vscode.window.showInformationMessage(`filter? ${getFilterRedundant()}`);
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`).replace(/\\/g, '/');
 
     const rCode = `
@@ -150,10 +151,20 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent);
 
     // Try to parse result from file
-    const parsed = parsePackageUpdateJson(tmpPath);
+    let parsed = parsePackageUpdateJson(tmpPath);
     if (!parsed) {
         vscode.window.showInformationMessage('✅ All R packages are up to date!');
         return;
+    }
+
+    if (getFilterRedundant()) {
+        const allInstalled = sidebarProvider.getPackages?.() || [];
+    
+        parsed = parsed.filter(outdated => {
+            const others = allInstalled.filter(p => p.name === outdated.Package);
+    
+            return !others.some(p => p.version === outdated.ReposVer);
+        });
     }
 
     // Prompt user to select which packages to update

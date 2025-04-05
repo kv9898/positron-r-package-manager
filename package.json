@@ -35,6 +35,16 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "R Package Manager",
+      "properties": {
+        "positron-r-package-manager.filterOutdatedIfUpToDateElsewhere": {
+          "type": "boolean",
+          "default": true,
+          "description": "Filter out outdated packages if an up-to-date version is installed in another library path."
+        }
+      }
+    },
     "commands": [
       {
         "command": "positron-r-package-manager.installPackages",
