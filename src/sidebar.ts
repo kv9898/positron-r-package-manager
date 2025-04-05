@@ -51,7 +51,7 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
         const isNowChecked = newState === vscode.TreeItemCheckboxState.Checked;
 
         const code = isNowChecked
-            ? `library(${item.pkg.name})`
+            ? `library(${JSON.stringify(item.pkg.name)}, lib.loc = ${JSON.stringify(item.pkg.libpath)})`
             : `detach("package:${item.pkg.name}", unload = TRUE)`;
 
         positron.runtime.executeCode('r', code, true, undefined, positron.RuntimeCodeExecutionMode.Interactive)
