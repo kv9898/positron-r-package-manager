@@ -60,11 +60,15 @@ jobs:
         with:
           name: extension-vsix
 
+      - name: 🧼 Resolve VSIX filename
+        id: find_vsix
+        run: echo "vsix=$(ls *.vsix)" >> "$GITHUB_OUTPUT"
+
       - name: 📦 Publish extension to Open VSX
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
-          extensionFile: "*.vsix"
+          extensionFile: ${{ steps.find_vsix.outputs.vsix }}
 
   github_release:
     name: 📝 Create GitHub Release
