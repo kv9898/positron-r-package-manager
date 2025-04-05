@@ -14,13 +14,37 @@ export function refreshPackages(sidebarProvider: SidebarProvider) {
 
     const rCode = `
     jsonlite::write_json(
-      within(
-        as.data.frame(installed.packages()[, c("Package", "Version")]),
-        {
-            Title <- vapply(Package, function(pkg) packageDescription(pkg, fields = "Title"), character(1))
-            Loaded <- Package %in% loadedNamespaces()
-        }
-      ),
+      {
+        df <- do.call(rbind, lapply(.libPaths(), function(lib) {
+          if (!dir.exists(lib)) return(NULL)
+    
+          pkgs <- installed.packages(lib.loc = lib)[, c("Package", "Version"), drop = FALSE]
+          if (nrow(pkgs) == 0) return(NULL)  # Skip empty libraries
+    
+          titles <- vapply(pkgs[, "Package"], function(pkg) {
+            tryCatch(packageDescription(pkg, fields = "Title"), error = function(e) NA_character_)
+          }, character(1))
+    
+          # Safely get loaded package paths
+          loaded_pkgs <- loadedNamespaces()
+          loaded_paths <- vapply(loaded_pkgs, function(pkg) {
+            tryCatch(dirname(getNamespaceInfo(pkg, "path")), error = function(e) NA_character_)
+          }, character(1), USE.NAMES = TRUE)
+    
+          data.frame(
+            Package = pkgs[, "Package"],
+            Version = pkgs[, "Version"],
+            LibPath = lib,
+            LocationType = if (normalizePath(lib, winslash = "/", mustWork = FALSE) %in% 
+                                 normalizePath(.Library, winslash = "/", mustWork = FALSE)) "System" else "User",
+            Title = titles,
+            Loaded = pkgs[, "Package"] %in% names(loaded_paths) & loaded_paths[pkgs[, "Package"]] == lib,
+            stringsAsFactors = FALSE
+          )
+        }))
+    
+        df[order(df$Package, df$LibPath), ]
+      },
       path = "${tempFilePath}",
       auto_unbox = TRUE
     )
@@ -29,7 +53,7 @@ export function refreshPackages(sidebarProvider: SidebarProvider) {
     positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent).then(() => {
         try {
             const contents = fs.readFileSync(tempFilePath, 'utf-8');
-            const parsed: { Package: string; Version: string; Loaded: boolean; Title: string }[] = JSON.parse(contents);
+            const parsed: { Package: string; Version: string; LibPath: string; LocationType: string; Title: string; Loaded: boolean }[] = JSON.parse(contents);
 
             // // Count loaded packages
             // const loadedCount = parsed.filter(pkg => pkg.loaded).length;
@@ -44,9 +68,11 @@ export function refreshPackages(sidebarProvider: SidebarProvider) {
             const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
                 name: pkg.Package,
                 version: pkg.Version,
+                libpath: pkg.LibPath,
+                locationtype: pkg.LocationType,
                 title: pkg.Title,
                 loaded: pkg.Loaded
-              }));
+            }));
 
             sidebarProvider.refresh(pkgInfo);
         } catch (err) {

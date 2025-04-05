@@ -5,6 +5,8 @@ import { refreshPackages } from './refresh';
 export interface RPackageInfo {
     name: string;
     version: string;
+    libpath: string;
+    locationtype: string;
     title: string;
     loaded: boolean;
 }
@@ -77,8 +79,8 @@ export class RPackageItem extends vscode.TreeItem {
     constructor(public pkg: RPackageInfo) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
-        this.description = pkg.version;
-        this.tooltip = `${pkg.title}`;
+        this.description = `${pkg.version} (${pkg.locationtype})`;
+        this.tooltip = `${pkg.title}\n(${pkg.libpath})`;
 
         this.contextValue = 'rPackage';
 
