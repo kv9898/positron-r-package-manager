@@ -9,7 +9,7 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
   return new Promise((resolve, reject) => {
     // The code you place here will be executed every time your command is executed
     // Load Tidyverse package
-    const tempFilePath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`).replace(/\\/g, '/');
+    const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`).replace(/\\/g, '/');
 
     // R code to write installed + loaded package info to JSON
 
@@ -46,14 +46,14 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
       
           df[order(df$Package, df$LibPath), ]
         },
-        path = "${tempFilePath}",
+        path = "${tmpPath}",
         auto_unbox = TRUE
       )
       `.trim();
 
     positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent).then(() => {
       try {
-        const contents = fs.readFileSync(tempFilePath, 'utf-8');
+        const contents = fs.readFileSync(tmpPath, 'utf-8');
         const parsed: { Package: string; Version: string; LibPath: string; LocationType: string; Title: string; Loaded: boolean }[] = JSON.parse(contents);
 
         // // Count loaded packages
@@ -64,7 +64,7 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
         // vscode.window.showInformationMessage(`✔️ ${loadedCount} loaded out of ${totalCount} installed R packages.`);
 
         // Optional: clean up
-        fs.unlinkSync(tempFilePath);
+        fs.unlinkSync(tmpPath);
 
         const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
           name: pkg.Package,
