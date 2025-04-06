@@ -130,7 +130,8 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
 }
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
-    const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`).replace(/\\/g, '/');
+    const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`);
+    const rTmpPath = tmpPath.replace(/\\/g, '/');
 
     const rCode = `
     jsonlite::write_json(
@@ -149,7 +150,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
         }))
         if (is.null(df)) list() else df[order(df$Package, df$LibPath), ]
       },
-      path = "${tmpPath}",
+      path = "${rTmpPath}",
       auto_unbox = TRUE
     )
     `.trim();

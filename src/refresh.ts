@@ -9,7 +9,8 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
   return new Promise((resolve, reject) => {
     // The code you place here will be executed every time your command is executed
     // Load Tidyverse package
-    const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`).replace(/\\/g, '/');
+    const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`);
+    const rTmpPath = tmpPath.replace(/\\/g, '/');
 
     // R code to write installed + loaded package info to JSON
 
@@ -46,7 +47,7 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
       
           df[order(df$Package, df$LibPath), ]
         },
-        path = "${tmpPath}",
+        path = "${rTmpPath}",
         auto_unbox = TRUE
       )
       `.trim();
