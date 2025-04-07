@@ -65,7 +65,12 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
         // vscode.window.showInformationMessage(`✔️ ${loadedCount} loaded out of ${totalCount} installed R packages.`);
 
         // Optional: clean up
-        fs.unlinkSync(tmpPath);
+        try {
+          fs.unlinkSync(tmpPath);
+        } catch (unlinkErr) {
+          console.warn('[Positron] Failed to delete temp file:', unlinkErr);
+          // No user-facing message, just dev-side warning
+        }
 
         const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
           name: pkg.Package,

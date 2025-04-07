@@ -205,7 +205,14 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
 function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: string; Installed: string; ReposVer: string }[] | null {
     try {
         const content = fs.readFileSync(tmpPath, 'utf-8').trim();
-        fs.unlinkSync(tmpPath);
+        
+        // Optional: clean up
+        try {
+            fs.unlinkSync(tmpPath);
+        } catch (unlinkErr) {
+            console.warn('[Positron] Failed to delete temp file:', unlinkErr);
+            // No user-facing message, just dev-side warning
+        }
 
         if (content === '{}' || content === '[]' || content === 'null') {
             return null;
