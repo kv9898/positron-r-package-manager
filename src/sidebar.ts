@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
+import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
 
 export interface RPackageInfo {
@@ -31,11 +32,16 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
         let filtered = this.packages;
 
         if (this.filterText.trim()) {
-            const keyword = this.filterText.toLowerCase();
-            filtered = this.packages.filter(pkg =>
-                pkg.name.toLowerCase().includes(keyword) ||
-                pkg.title.toLowerCase().includes(keyword)
-            );
+            const enriched = this.packages.map(pkg => ({
+                pkg,
+                query: `${pkg.name} ${pkg.title}`
+              }));
+              
+              const matches = filter(enriched, this.filterText.trim(), {
+                key: 'query'
+              });
+              
+              filtered = matches.map(m => m.pkg);
         }
 
         if (filtered.length === 0) {
