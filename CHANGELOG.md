@@ -2,6 +2,11 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.0.4
+
+- Add fuzzy search support for installed R packages
+- Updated sidebar title: "Packages: Installed" → "Packages: R"
+
 ## 0.0.3
 
 - Handle multiple installations of the same package across library paths
