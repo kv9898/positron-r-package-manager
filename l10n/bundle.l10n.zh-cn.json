@@ -14,5 +14,15 @@
   "Uninstall R package {0} {1} ({2})?": "确认卸载R包 {0} {1} ({2})?",
   "Error while uninstalling {0}: {1}": "卸载 {0} 时出错: {1}",
   "Failed to uninstall {0} from {1}": "未能从 {1} 卸载 {0} ",
-  "✅ Uninstalled {0}": "✅ 成功卸载 {0}"
+  "✅ Uninstalled {0}": "✅ 成功卸载 {0}",
+  "Error refreshing packages: {0}": "刷新包信息时出错: {0}",
+  "✅ All R packages are up to date!": "✅ 所有 R 包都已为最新版本!",
+  "No packages selected for update.": "未选择要升级的包。",
+  "✅ Updated {0} R package(s) in-place": "✅ 成功升级 {0} 个 R 包",
+  "[Positron] Failed to delete temp file: ": "[Positron] 删除临时文件失败: ",
+  "Failed to retrieve updatable packages.": "无法获取可升级的包信息。",
+  "Select R packages to update": "选择要升级的包",
+  "Choose package installs to update": "请选择要升级的包安装信息",
+  "Search R packages — press Esc to clear filter, Enter to apply": "搜索已安装的 R 包 — 按 Esc 清空过滤器, Enter 应用",
+  "e.g. plot": "例如 plot",
 }

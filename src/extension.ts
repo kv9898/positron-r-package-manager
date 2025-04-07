@@ -61,9 +61,9 @@ export function activate(context: vscode.ExtensionContext) {
 		// search package provider
 		vscode.commands.registerCommand('positron-r-package-manager.searchPackages', async () => {
 			const input = await vscode.window.showInputBox({
-				prompt: 'Search R packages — press Esc to clear filter, Enter to apply',
+				prompt: vscode.l10n.t('Search R packages — press Esc to clear filter, Enter to apply'),
 				value: sidebarProvider.getFilter(),
-				placeHolder: 'e.g. plot',
+				placeHolder: vscode.l10n.t('e.g. plot'),
 			});
 
 			sidebarProvider.setFilter(input ?? '');

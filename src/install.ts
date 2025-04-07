@@ -171,14 +171,14 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     }
 
     if (parsed.length === 0) {
-        vscode.window.showInformationMessage('✅ All R packages are up to date!');
+        vscode.window.showInformationMessage(vscode.l10n.t('✅ All R packages are up to date!'));
         return;
     }
 
     // Prompt user to select which packages to update
     const selected = await promptPackageUpdateSelection(parsed);
     if (!selected || selected.length === 0) {
-        vscode.window.showInformationMessage('No packages selected for update.');
+        vscode.window.showInformationMessage(vscode.l10n.t('No packages selected for update.'));
         return;
     }
 
@@ -198,7 +198,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
         positron.RuntimeCodeExecutionMode.Interactive
     );
 
-    vscode.window.showInformationMessage(`✅ Updated ${selected.length} R package(s) in-place`);
+    vscode.window.showInformationMessage(vscode.l10n.t("✅ Updated {0} R package(s) in-place", selected.length));
     refreshPackages(sidebarProvider);
 }
 
@@ -210,7 +210,7 @@ function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: st
         try {
             fs.unlinkSync(tmpPath);
         } catch (unlinkErr) {
-            console.warn('[Positron] Failed to delete temp file:', unlinkErr);
+            console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
             // No user-facing message, just dev-side warning
         }
 
@@ -225,7 +225,7 @@ function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: st
 
         return parsed;
     } catch (err) {
-        vscode.window.showErrorMessage('Failed to retrieve updatable packages.');
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to retrieve updatable packages.'));
         return null;
     }
 }
@@ -241,9 +241,9 @@ async function promptPackageUpdateSelection(
     }));
 
     const selected = await vscode.window.showQuickPick(items, {
-        title: 'Select R packages to update',
+        title: vscode.l10n.t('Select R packages to update'),
         canPickMany: true,
-        placeHolder: 'Choose package installs to update',
+        placeHolder: vscode.l10n.t('Choose package installs to update'),
         ignoreFocusOut: true
     });
 
