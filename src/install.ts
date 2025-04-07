@@ -157,21 +157,21 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     // Run R code to dump updates
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent);
 
-    // Try to parse result from file
-    let parsed = parsePackageUpdateJson(tmpPath);
-    if (!parsed) {
-        vscode.window.showInformationMessage('✅ All R packages are up to date!');
-        return;
-    }
+    // Parse updates
+    let parsed = parsePackageUpdateJson(tmpPath) ?? [];
 
     if (getFilterRedundant()) {
-        const allInstalled = sidebarProvider.getPackages?.() || [];
-
-        parsed = parsed.filter(outdated => {
-            const others = allInstalled.filter(p => p.name === outdated.Package);
-
-            return !others.some(p => p.version === outdated.ReposVer);
-        });
+      const allInstalled = sidebarProvider.getPackages?.() || [];
+    
+      parsed = parsed.filter(outdated => {
+        const others = allInstalled.filter(p => p.name === outdated.Package);
+        return !others.some(p => p.version === outdated.ReposVer);
+      });
+    }
+    
+    if (parsed.length === 0) {
+      vscode.window.showInformationMessage('✅ All R packages are up to date!');
+      return;
     }
 
     // Prompt user to select which packages to update
