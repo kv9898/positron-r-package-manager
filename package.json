@@ -24,13 +24,13 @@
   "keywords": [
     "R",
     "package",
-    "manager",
     "Positron",
     "ggplot2",
-    "dplyr",
     "install",
+    "uninstall",
     "update",
-    "CRAN"
+    "CRAN",
+    "search"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
