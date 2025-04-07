@@ -5,13 +5,37 @@ import * as os from 'os';
 import * as path from 'path';
 import { SidebarProvider, RPackageInfo } from './sidebar';
 
+// Polling function to wait for a file to be created
+function waitForFile(filePath: string, timeout = 5000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    const interval = setInterval(() => {
+      if (fs.existsSync(filePath)) {
+        clearInterval(interval);
+        resolve();
+      } else if (Date.now() - start > timeout) {
+        clearInterval(interval);
+        reject(new Error(`Timeout waiting for file: ${filePath}`));
+      }
+    }, 100);
+  });
+}
+
 export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void> {
   return new Promise((resolve, reject) => {
-    // The code you place here will be executed every time your command is executed
-    // Load Tidyverse package
-    const tempFilePath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`).replace(/\\/g, '/');
-
-    // R code to write installed + loaded package info to JSON
+    const homeDir = os.homedir();
+    const packagesDir = path.join(homeDir, 'positron_r_packages');
+    if (!fs.existsSync(packagesDir)) {
+      try {
+        fs.mkdirSync(packagesDir, { recursive: true });
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          'Failed to create directory for R package updates: ' + (err instanceof Error ? err.message : String(err))
+        );
+        return reject(err);
+      }
+    }
+    const tempFilePath = path.join(packagesDir, `r_packages_${Date.now()}.json`).replace(/\\/g, '/');
 
     const rCode = `
       jsonlite::write_json(
@@ -26,7 +50,6 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
               tryCatch(packageDescription(pkg, fields = "Title"), error = function(e) NA_character_)
             }, character(1))
       
-            # Safely get loaded package paths
             loaded_pkgs <- loadedNamespaces()
             loaded_paths <- vapply(loaded_pkgs, function(pkg) {
               tryCatch(dirname(getNamespaceInfo(pkg, "path")), error = function(e) NA_character_)
@@ -49,38 +72,39 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
         path = "${tempFilePath}",
         auto_unbox = TRUE
       )
-      `.trim();
+    `.trim();
 
-    positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent).then(() => {
-      try {
-        const contents = fs.readFileSync(tempFilePath, 'utf-8');
-        const parsed: { Package: string; Version: string; LibPath: string; LocationType: string; Title: string; Loaded: boolean }[] = JSON.parse(contents);
-
-        // // Count loaded packages
-        // const loadedCount = parsed.filter(pkg => pkg.loaded).length;
-        // const totalCount = parsed.length;
-
-        // // Show result
-        // vscode.window.showInformationMessage(`✔️ ${loadedCount} loaded out of ${totalCount} installed R packages.`);
-
-        // Optional: clean up
-        fs.unlinkSync(tempFilePath);
-
-        const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
-          name: pkg.Package,
-          version: pkg.Version,
-          libpath: pkg.LibPath,
-          locationtype: pkg.LocationType,
-          title: pkg.Title,
-          loaded: pkg.Loaded
-        }));
-
-        sidebarProvider.refresh(pkgInfo);
-        resolve();
-      } catch (err) {
-        vscode.window.showErrorMessage('Failed to read or parse R output: ' + (err instanceof Error ? err.message : String(err)));
-        reject(err);
-      }
-    }, reject);
+    positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent)
+      .then(() => {
+        // Wait for the file to be created
+        waitForFile(tempFilePath)
+          .then(() => {
+            try {
+              const contents = fs.readFileSync(tempFilePath, 'utf-8');
+              const parsed: { Package: string; Version: string; LibPath: string; LocationType: string; Title: string; Loaded: boolean }[] = JSON.parse(contents);
+              // Clean up the temporary file after reading it
+              fs.unlinkSync(tempFilePath);
+              const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
+                name: pkg.Package,
+                version: pkg.Version,
+                libpath: pkg.LibPath,
+                locationtype: pkg.LocationType,
+                title: pkg.Title,
+                loaded: pkg.Loaded
+              }));
+              sidebarProvider.refresh(pkgInfo);
+              resolve();
+            } catch (err) {
+              vscode.window.showErrorMessage(
+                'Failed to read or parse R output: ' + (err instanceof Error ? err.message : String(err))
+              );
+              reject(err);
+            }
+          })
+          .catch(err => {
+            vscode.window.showErrorMessage(err.message);
+            reject(err);
+          });
+      }, reject);
   });
-};
+}

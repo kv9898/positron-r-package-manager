@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.0.4
+
+- Fix unable to write R packages to OS temp folder due to admin write access
+
 ## 0.0.3
 
 - Handle multiple installations of the same package across library paths
