@@ -1,11 +1,11 @@
 # Change Log
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
-
 ## 0.0.5
 
 - Added localisation support for Chinese
 - Updated extension keywords
+- Fix unable to write R packages to OS temp folder due to admin write access
 
 ## 0.0.4
 
