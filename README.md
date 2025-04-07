@@ -2,18 +2,18 @@
 
 Manage your R extensions from within [Positron](https://positron.posit.co/) — the RStudio-style package manager for the modern data science IDE.
 
-<img src="https://github.com/user-attachments/assets/5d9d5af9-a30f-4491-a00e-7d3e6b27da0d" alt="Positron R Package Sidebar" width="300"/>
+<img src="https://github.com/user-attachments/assets/5fef4eb8-50b8-4ad1-bdf0-60a1e8c131dd" alt="Positron R Package Sidebar" width="300"/>
 
 ---
 
 ## 🚀 Features
 
 - ✅ View all **installed R packages** in a tidy sidebar
-- ✅ Check which packages are **loaded** (like RStudio’s “Packages” tab)
+- ✅ Check which packages are **loaded** (like RStudio's "Packages" tab)
 - ✅ **Install** one or multiple packages (space/comma-separated)
 - ✅ **Update** outdated packages with version preview and multi-select
 - ✅ **Uninstall** packages with a single click
-- ✅ 🔍 **Search** by name or title (fuzzy search coming soon)
+- ✅ 🔍 **Search** by name or title (fuzzy search supported)
 - ✅ Checkbox toggling to load/unload
 
 ---
@@ -63,11 +63,8 @@ Licensed under the [MIT License](./LICENSE)
 
 ## 💡 Future Ideas
 
-- [ ] Show package descriptions inline
-- [ ] Indicate base/system packages visually
-- [ ] Support CRAN task views
-- [ ] Fuzzy search (coming soon)
 - [ ] Install from GitHub or Bioconductor
+- [ ] Chinese language support
 
 ---
 

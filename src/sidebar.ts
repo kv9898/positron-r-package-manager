@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
+import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
 
 export interface RPackageInfo {
@@ -31,17 +32,22 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
         let filtered = this.packages;
 
         if (this.filterText.trim()) {
-            const keyword = this.filterText.toLowerCase();
-            filtered = this.packages.filter(pkg =>
-                pkg.name.toLowerCase().includes(keyword) ||
-                pkg.title.toLowerCase().includes(keyword)
-            );
+            const enriched = this.packages.map(pkg => ({
+                pkg,
+                query: `${pkg.name} ${pkg.title}`
+            }));
+
+            const matches = filter(enriched, this.filterText.trim(), {
+                key: 'query'
+            });
+
+            filtered = matches.map(m => m.pkg);
         }
 
         if (filtered.length === 0) {
             return Promise.resolve([
-                new PlaceholderItem("No R package information available yet.") as RPackageItem,
-                new PlaceholderItem("Try to refresh after R starts or clear search.") as RPackageItem
+                new PlaceholderItem(vscode.l10n.t("No R package information available yet.")) as RPackageItem,
+                new PlaceholderItem(vscode.l10n.t("Try to refresh after R starts or clear search.")) as RPackageItem
             ]);
         }
 
@@ -90,7 +96,7 @@ export class RPackageItem extends vscode.TreeItem {
 
         this.command = {
             command: 'positron-r-package-manager.openHelp',
-            title: 'Open Package Help',
+            title: vscode.l10n.t('Open Package Help'),
             arguments: [pkg.name],
         };
     }

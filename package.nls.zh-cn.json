@@ -1,0 +1,12 @@
+{
+    "display.name": "Positron R包管理器",
+    "short.name": "R包管理器",
+    "description": "在 Positron 中仿照 RStudio 实现包管理功能。",
+    "filterOutdatedIfUpToDateElsewhere": "在升级中忽略已安装在其他库路径的过时包。",
+    "install.packages": "R:安装包",
+    "uninstall.package": "R: 卸载包",
+    "update.packages": "R: 升级包",
+    "refresh.packages": "R: 刷新包信息",
+    "search.packages": "R: 搜索已安装的包",
+    "packages": "包"
+}
