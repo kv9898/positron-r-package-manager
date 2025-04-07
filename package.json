@@ -2,7 +2,7 @@
   "name": "positron-r-package-manager",
   "displayName": "Positron R Package Manager",
   "description": "Mimic RStudio's package management capabilities for Positron.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "kv9898",
   "repository": {
     "type": "git",
