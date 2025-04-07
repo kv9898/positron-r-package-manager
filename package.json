@@ -1,7 +1,7 @@
 {
   "name": "positron-r-package-manager",
-  "displayName": "Positron R Package Manager",
-  "description": "Mimic RStudio's package management capabilities for Positron.",
+  "displayName": "%display.name%",
+  "description": "%description%",
   "version": "0.0.4",
   "publisher": "kv9898",
   "repository": {
@@ -36,40 +36,40 @@
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
-      "title": "R Package Manager",
+      "title": "%short.name%",
       "properties": {
         "positron-r-package-manager.filterOutdatedIfUpToDateElsewhere": {
           "type": "boolean",
           "scope": "machine-overridable",
           "default": true,
-          "description": "Filter out outdated packages if an up-to-date version is installed in another library path during updates."
+          "description": "%filterOutdatedIfUpToDateElsewhere%"
         }
       }
     },
     "commands": [
       {
         "command": "positron-r-package-manager.installPackages",
-        "title": "R: Install Packages",
+        "title": "%install.packages%",
         "icon": "$(desktop-download)"
       },
       {
         "command": "positron-r-package-manager.uninstallPackage",
-        "title": "R: Uninstall Package",
+        "title": "%uninstall.package%",
         "icon": "$(trash)"
       },
       {
         "command": "positron-r-package-manager.updatePackages",
-        "title": "R: Update Installed Packages",
+        "title": "%update.packages%",
         "icon": "$(arrow-circle-up)"
       },
       {
         "command": "positron-r-package-manager.refreshPackages",
-        "title": "R: Refresh package information",
+        "title": "%refresh.packages%",
         "icon": "$(refresh)"
       },
       {
         "command": "positron-r-package-manager.searchPackages",
-        "title": "R: Search for installed packages",
+        "title": "%search.packages%",
         "icon": "$(search)"
       }
     ],
@@ -77,7 +77,7 @@
       "activitybar": [
         {
           "id": "positron-r-packages",
-          "title": "Packages",
+          "title": "%packages%",
           "icon": "$(book)"
         }
       ]
@@ -151,5 +151,6 @@
   },
   "dependencies": {
     "fuzzaldrin-plus": "^0.6.0"
-  }
+  },
+  "l10n": "./l10n"
 }

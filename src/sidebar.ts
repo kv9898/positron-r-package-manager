@@ -35,19 +35,19 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
             const enriched = this.packages.map(pkg => ({
                 pkg,
                 query: `${pkg.name} ${pkg.title}`
-              }));
-              
-              const matches = filter(enriched, this.filterText.trim(), {
+            }));
+
+            const matches = filter(enriched, this.filterText.trim(), {
                 key: 'query'
-              });
-              
-              filtered = matches.map(m => m.pkg);
+            });
+
+            filtered = matches.map(m => m.pkg);
         }
 
         if (filtered.length === 0) {
             return Promise.resolve([
-                new PlaceholderItem("No R package information available yet.") as RPackageItem,
-                new PlaceholderItem("Try to refresh after R starts or clear search.") as RPackageItem
+                new PlaceholderItem(vscode.l10n.t("No R package information available yet.")) as RPackageItem,
+                new PlaceholderItem(vscode.l10n.t("Try to refresh after R starts or clear search.")) as RPackageItem
             ]);
         }
 
@@ -96,7 +96,7 @@ export class RPackageItem extends vscode.TreeItem {
 
         this.command = {
             command: 'positron-r-package-manager.openHelp',
-            title: 'Open Package Help',
+            title: vscode.l10n.t('Open Package Help'),
             arguments: [pkg.name],
         };
     }
