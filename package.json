@@ -86,7 +86,7 @@
       "positron-r-packages": [
         {
           "id": "rPackageView",
-          "name": "Installed",
+          "name": "R",
           "icon": "$(book)"
         }
       ]
