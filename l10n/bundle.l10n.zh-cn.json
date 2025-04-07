@@ -24,5 +24,6 @@
   "Select R packages to update": "选择要升级的包",
   "Choose package installs to update": "请选择要升级的包安装信息",
   "Search R packages — press Esc to clear filter, Enter to apply": "搜索已安装的 R 包 — 按 Esc 清空过滤器, Enter 应用",
-  "e.g. plot": "例如 plot"
+  "e.g. plot": "例如 plot",
+  "Error while fetching updates: {0}": "获取更新信息时出错: {0}"
 }

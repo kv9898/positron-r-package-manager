@@ -155,11 +155,30 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     )
     `.trim();
 
+    const observer: positron.runtime.ExecutionObserver = {
+        onError: (error: string) => {
+            error = stripAnsi(error);
+            vscode.window.showErrorMessage(vscode.l10n.t("Error while fetching updates: {0}", error));
+            refreshPackages(sidebarProvider);
+        },
+        onFailed: (error: Error) => {
+            const message = stripAnsi(error.message);
+            vscode.window.showErrorMessage(vscode.l10n.t("Error while fetching updates: {0}", message));
+            refreshPackages(sidebarProvider);
+        },
+    };
+
     // Run R code to dump updates
-    await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent);
+    await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
 
     // Parse updates
-    let parsed = parsePackageUpdateJson(tmpPath) ?? [];
+    let parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[] = [];
+    try {
+        parsed = parsePackageUpdateJson(tmpPath);
+    } catch (err) {
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to retrieve updatable packages.'));
+        return;
+    }
 
     if (getFilterRedundant()) {
         const allInstalled = sidebarProvider.getPackages?.() || [];
@@ -202,32 +221,27 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     refreshPackages(sidebarProvider);
 }
 
-function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: string; Installed: string; ReposVer: string }[] | null {
+function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: string; Installed: string; ReposVer: string }[] {
+    const content = fs.readFileSync(tmpPath, 'utf-8').trim();
+
+    // Optional: clean up
     try {
-        const content = fs.readFileSync(tmpPath, 'utf-8').trim();
-
-        // Optional: clean up
-        try {
-            fs.unlinkSync(tmpPath);
-        } catch (unlinkErr) {
-            console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
-            // No user-facing message, just dev-side warning
-        }
-
-        if (content === '{}' || content === '[]' || content === 'null') {
-            return null;
-        }
-
-        const parsed = JSON.parse(content);
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-            return null;
-        }
-
-        return parsed;
-    } catch (err) {
-        vscode.window.showErrorMessage(vscode.l10n.t('Failed to retrieve updatable packages.'));
-        return null;
+        fs.unlinkSync(tmpPath);
+    } catch (unlinkErr) {
+        console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
+        // No user-facing message, just dev-side warning
     }
+
+    if (content === '{}' || content === '[]' || content === 'null') {
+        return [];
+    }
+
+    const parsed = JSON.parse(content);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+        return [];
+    }
+
+    return parsed;
 }
 
 async function promptPackageUpdateSelection(
