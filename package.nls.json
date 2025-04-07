@@ -1,0 +1,12 @@
+{
+    "display.name": "Positron R Package Manager",
+    "short.name": "R Package Manager",
+    "description": "Mimic RStudio's package management capabilities for Positron.",
+    "filterOutdatedIfUpToDateElsewhere": "Filter out outdated packages if an up-to-date version is installed in another library path during updates.",
+    "install.packages": "R: Install Packages",
+    "uninstall.package": "R: Uninstall Package",
+    "update.packages": "R: Update Installed Packages",
+    "refresh.packages": "R: Refresh package information",
+    "search.packages": "R: Search for installed packages",
+    "packages": "Packages"
+}
