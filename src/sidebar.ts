@@ -46,8 +46,8 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
 
         if (filtered.length === 0) {
             return Promise.resolve([
-                new PlaceholderItem("No R package information available yet.") as RPackageItem,
-                new PlaceholderItem("Try to refresh after R starts or clear search.") as RPackageItem
+                new PlaceholderItem(vscode.l10n.t("No R package information available yet.")) as RPackageItem,
+                new PlaceholderItem(vscode.l10n.t("Try to refresh after R starts or clear search.")) as RPackageItem
             ]);
         }
 
