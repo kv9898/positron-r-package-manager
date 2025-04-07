@@ -35,13 +35,13 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
             const enriched = this.packages.map(pkg => ({
                 pkg,
                 query: `${pkg.name} ${pkg.title}`
-              }));
-              
-              const matches = filter(enriched, this.filterText.trim(), {
+            }));
+
+            const matches = filter(enriched, this.filterText.trim(), {
                 key: 'query'
-              });
-              
-              filtered = matches.map(m => m.pkg);
+            });
+
+            filtered = matches.map(m => m.pkg);
         }
 
         if (filtered.length === 0) {
@@ -96,7 +96,7 @@ export class RPackageItem extends vscode.TreeItem {
 
         this.command = {
             command: 'positron-r-package-manager.openHelp',
-            title: 'Open Package Help',
+            title: vscode.l10n.t('Open Package Help'),
             arguments: [pkg.name],
         };
     }

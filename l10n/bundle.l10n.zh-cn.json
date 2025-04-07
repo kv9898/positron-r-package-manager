@@ -1,4 +1,18 @@
 {
   "No R package information available yet.": "暂无 R 包信息。",
-  "Try to refresh after R starts or clear search.": "请在R启动之后尝试刷新或清空搜索。"
+  "Try to refresh after R starts or clear search.": "请在R启动之后尝试刷新或清空搜索。",
+  "Open Package Help": "打开包帮助界面",
+  "[Positron] Failed to delete temp file:": "[Positron] 删除临时文件失败:",
+  "Failed to read or parse R output: ": "无法读取或解析 R 输出: ",
+  "Install R Packages": "安装 R 包",
+  "Packages (separate multiple with space or comma)": "包名(多个用空格或逗号分隔)",
+  "e.g. ggplot2 dplyr tidyr": "例如 ggplot2 dplyr tidyr",
+  "✅ Installed R package(s): {0}": "✅ 已安装 R 包: {0}",
+  "No R packages available to uninstall.": "没有可卸载的 R 包。",
+  "Select a package to uninstall": "选择要卸载的包",
+  "Please click a package to uninstall": "请点击要卸载的包",
+  "Uninstall R package {0} {1} ({2})?": "确认卸载R包 {0} {1} ({2})?",
+  "Error while uninstalling {0}: {1}": "卸载 {0} 时出错: {1}",
+  "Failed to uninstall {0} from {1}": "未能从 {1} 卸载 {0} ",
+  "✅ Uninstalled {0}": "✅ 成功卸载 {0}"
 }

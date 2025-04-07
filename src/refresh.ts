@@ -68,7 +68,7 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
         try {
           fs.unlinkSync(tmpPath);
         } catch (unlinkErr) {
-          console.warn('[Positron] Failed to delete temp file:', unlinkErr);
+          console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
           // No user-facing message, just dev-side warning
         }
 
@@ -84,7 +84,7 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
         sidebarProvider.refresh(pkgInfo);
         resolve();
       } catch (err) {
-        vscode.window.showErrorMessage('Failed to read or parse R output: ' + (err instanceof Error ? err.message : String(err)));
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to read or parse R output: ') + (err instanceof Error ? err.message : String(err)));
         reject(err);
       }
     }, reject);
