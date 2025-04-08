@@ -175,7 +175,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     )
     `.trim();
 
-    const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider))
+    const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider));
 
     // Run R code to dump updates
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
