@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as positron from 'positron';
 
 /**
  * Remove ANSI escape codes from a string, so that only the plain text remains.
@@ -24,4 +25,31 @@ export function getFilterRedundant(): boolean {
         vscode.Uri.file(vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? "")
     );
     return config.get<boolean>('filterOutdatedIfUpToDateElsewhere', true);
+}
+
+export function getObserver(
+    template: string,
+    templateArguments: (string | number | boolean)[] = [],
+    func?: () => void
+): positron.runtime.ExecutionObserver {
+
+    function errorHandling(error: string) {
+        const fullArgs = [...templateArguments, error];
+        vscode.window.showErrorMessage(vscode.l10n.t(template, ...fullArgs));
+        if (func) {
+            func();
+        }
+    }
+
+    const observer: positron.runtime.ExecutionObserver = {
+        onError: (error: string) => {
+            error = stripAnsi(error);
+            errorHandling(error);
+        },
+        onFailed: (error: Error) => {
+            const message = stripAnsi(error.message);
+            errorHandling(message);
+        },
+    };
+    return observer;
 }

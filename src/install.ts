@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { RPackageItem, SidebarProvider } from './sidebar';
 import { refreshPackages } from './refresh';
-import { stripAnsi, getFilterRedundant } from './utils';
+import { getFilterRedundant, getObserver } from './utils';
 
 /**
  * Install R packages from the command palette.
@@ -101,18 +101,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
   remove.packages("${item.pkg.name}", lib="${item.pkg.libpath}")
   `.trim();
 
-    const observer: positron.runtime.ExecutionObserver = {
-        onError: (error: string) => {
-            error = stripAnsi(error);
-            vscode.window.showErrorMessage(vscode.l10n.t("Error while uninstalling {0}: {1}", item!.pkg.name, error));
-            refreshPackages(sidebarProvider);
-        },
-        onFailed: (error: Error) => {
-            const message = stripAnsi(error.message);
-            vscode.window.showErrorMessage(vscode.l10n.t("Error while uninstalling {0}: {1}", item!.pkg.name, message));
-            refreshPackages(sidebarProvider);
-        },
-    };
+    const observer = getObserver("Error while uninstalling {0}: {1}", [item!.pkg.name], () => refreshPackages(sidebarProvider));
     positron.runtime.executeCode(
         'r',
         rCode,
@@ -186,18 +175,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     )
     `.trim();
 
-    const observer: positron.runtime.ExecutionObserver = {
-        onError: (error: string) => {
-            error = stripAnsi(error);
-            vscode.window.showErrorMessage(vscode.l10n.t("Error while fetching updates: {0}", error));
-            refreshPackages(sidebarProvider);
-        },
-        onFailed: (error: Error) => {
-            const message = stripAnsi(error.message);
-            vscode.window.showErrorMessage(vscode.l10n.t("Error while fetching updates: {0}", message));
-            refreshPackages(sidebarProvider);
-        },
-    };
+    const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider))
 
     // Run R code to dump updates
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
