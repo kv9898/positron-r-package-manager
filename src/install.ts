@@ -89,10 +89,10 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
     const confirm = await vscode.window.showWarningMessage(
         vscode.l10n.t("Uninstall R package {0} {1} ({2})?", item.pkg.name, item.pkg.version, item.pkg.locationtype),
         { modal: true },
-        'Yes'
+         vscode.l10n.t('Yes')
     );
 
-    if (confirm !== 'Yes') { return; };
+    if (confirm !==  vscode.l10n.t('Yes')) { return; };
 
     const rCode = `
   if ("${item.pkg.name}" %in% loadedNamespaces()) {
