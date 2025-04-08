@@ -5,6 +5,23 @@ import * as os from 'os';
 import * as path from 'path';
 import { SidebarProvider, RPackageInfo } from './sidebar';
 
+
+/**
+ * Refreshes the package list displayed in the sidebar by executing R code to retrieve
+ * information about installed and loaded R packages. The package information is then
+ * passed to the SidebarProvider to update the tree view.
+ *
+ * This function generates a temporary JSON file containing the package information,
+ * including package name, version, library path, location type, and whether it is loaded.
+ * It then reads and parses this JSON file, constructs RPackageInfo objects, and uses them
+ * to refresh the sidebar.
+ *
+ * @param sidebarProvider - The SidebarProvider instance responsible for managing the
+ *                          R package tree view.
+ * @returns A promise that resolves when the package list has been successfully refreshed,
+ *          or rejects if there is an error in executing the R code or parsing its output.
+ */
+
 export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void> {
   return new Promise((resolve, reject) => {
     // The code you place here will be executed every time your command is executed

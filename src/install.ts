@@ -10,8 +10,14 @@ import { refreshPackages } from './refresh';
 import { stripAnsi, getFilterRedundant } from './utils';
 
 /**
- * Prompts the user to enter one or more R packages to install, with an option to include dependencies.
- * Executes install.packages() and refreshes the sidebar after completion.
+ * Install R packages from the command palette.
+ *
+ * This function prompts the user for package names, splits the input
+ * into separate packages, and then runs `install.packages()` in the
+ * R runtime. After the installation is complete, it shows a success
+ * message and refreshes the package list.
+ *
+ * @param sidebarProvider The {@link SidebarProvider} instance to refresh after installation.
  */
 export async function installPackages(sidebarProvider: SidebarProvider): Promise<void> {
     const input = await vscode.window.showInputBox({
@@ -45,6 +51,13 @@ export async function installPackages(sidebarProvider: SidebarProvider): Promise
     });
 }
 
+/**
+ * Uninstalls an R package from the active R process.
+ * If no item is provided, it will prompt the user to select a package to uninstall.
+ * @param item The RPackageItem to uninstall. If undefined, it will prompt the user to select one.
+ * @param sidebarProvider The SidebarProvider instance to refresh after uninstalling.
+ * @returns A Promise that resolves when the uninstallation is complete.
+ */
 export async function uninstallPackage(item: RPackageItem | undefined, sidebarProvider: SidebarProvider): Promise<void> {
     if (!item) {
         const all = sidebarProvider.getPackages?.();
@@ -128,6 +141,24 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
         },
     );
 }
+
+/**
+ * Updates outdated R packages by fetching available updates, prompting the user to select
+ * which packages to update, and executing the update process in the R runtime.
+ * 
+ * This function writes a temporary JSON file containing information about outdated packages,
+ * including package name, library path, installed version, and repository version. It then
+ * parses the JSON file and filters out packages with up-to-date versions in other library paths.
+ * 
+ * If there are outdated packages, the user is prompted to select which packages to update.
+ * The selected packages are then updated by executing `install.packages()` for each one.
+ * 
+ * After updating, the package list in the sidebar is refreshed to reflect the changes.
+ * 
+ * @param sidebarProvider - The SidebarProvider instance responsible for managing the
+ *                          R package tree view.
+ * @returns A promise that resolves when the update process is complete.
+ */
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`);
@@ -221,6 +252,17 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     refreshPackages(sidebarProvider);
 }
 
+/**
+ * Reads a JSON file containing package information and returns an array of package
+ * information objects with properties 'Package', 'LibPath', 'Installed', and 'ReposVer'.
+ * If the file is empty, or contains invalid JSON, an empty array is returned.
+ *
+ * This function is used to parse the result of a temporary R script that dumps package
+ * information in JSON format. The script is executed by the updatePackages() function.
+ *
+ * @param tmpPath - the path to the temporary JSON file to read
+ * @returns an array of package information objects
+ */
 function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: string; Installed: string; ReposVer: string }[] {
     const content = fs.readFileSync(tmpPath, 'utf-8').trim();
 
@@ -244,6 +286,19 @@ function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: st
     return parsed;
 }
 
+/**
+ * Shows a QuickPick selection UI to the user, given a list of parsed package
+ * information objects. The user is prompted to select which packages to update.
+ *
+ * Each package information object should have the following properties:
+ * - `Package`: the name of the package
+ * - `LibPath`: the path to the library directory where the package is installed
+ * - `Installed`: the currently installed version of the package
+ * - `ReposVer`: the version of the package available from the repository
+ *
+ * The function returns a promise that resolves to the array of selected package
+ * information objects, or undefined if the user cancels the selection.
+ */
 async function promptPackageUpdateSelection(
     parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[]
 ): Promise<typeof parsed | undefined> {
