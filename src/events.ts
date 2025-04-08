@@ -14,8 +14,10 @@ export function getRegisterRuntimeEvent(sidebarProvider: SidebarProvider): vscod
 
 export function getChangeForegroundEvent(sidebarProvider: SidebarProvider): vscode.Disposable {
     const ChangeForegroundEvent = positron.runtime.onDidChangeForegroundSession((event) => {
-        // if (event.languageId !== 'r') { return; };
+        // Only refresh if the new session is an R session
+        if (!event?.startsWith('r-')) { return; };
         refreshPackages(sidebarProvider);
     });
+
     return ChangeForegroundEvent;
 }
