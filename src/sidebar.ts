@@ -19,15 +19,34 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
 
     private packages: RPackageInfo[] = [];
 
+    /**
+     * Refresh the package list with the given data. This function is meant to be called from the refreshPackages function in the refresh module.
+     * @param packages A list of RPackageInfo objects, which will be used to populate the tree view.
+     */
     refresh(packages: RPackageInfo[]): void {
         this.packages = packages;
         this._onDidChangeTreeData.fire();
     }
 
+    /**
+     * Returns the TreeItem for the given RPackageItem.
+     * @param element The RPackageItem to generate a TreeItem for.
+     * @returns The TreeItem corresponding to the given RPackageItem.
+     */
     getTreeItem(element: RPackageItem): vscode.TreeItem {
         return element;
     }
 
+    /**
+     * Returns the children elements of the tree view.
+     *
+     * If the package list is empty, it returns two placeholder items to indicate that the package information is not available and that the user should try to refresh after R starts or clear the search.
+     *
+     * If the package list is filtered, it returns a filtered list of RPackageItems.
+     *
+     * Otherwise, it returns the list of RPackageItems.
+     * @returns A list of RPackageItems, which are the children of the tree view.
+     */
     getChildren(): Thenable<RPackageItem[]> {
         let filtered = this.packages;
 
@@ -53,6 +72,14 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
 
         return Promise.resolve(filtered.map(pkg => new RPackageItem(pkg)));
     }
+
+    /**
+     * Handles a change in the checkbox state of an RPackageItem in the tree view.
+     * If the item is now checked, it will load the package in the current R session.
+     * If the item is now unchecked, it will unload the package from the current R session.
+     * @param item The RPackageItem whose checkbox state has changed.
+     * @param newState The new state of the checkbox.
+     */
     handleCheckboxChange(item: RPackageItem, newState: vscode.TreeItemCheckboxState) {
         const isNowChecked = newState === vscode.TreeItemCheckboxState.Checked;
 
@@ -68,20 +95,40 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
             });
     }
 
+    /**
+     * Gets the current filter text.
+     *
+     * Returns an empty string if there is no filter text.
+     * @returns The current filter text, or an empty string if there is no filter.
+     */
     getFilter(): string {
         return this.filterText || '';
     }
+
+    /**
+     * Sets the filter text for the tree view and refreshes the tree view accordingly.
+     * If the filter text is empty, the tree view will show all packages.
+     * @param filterText The new filter text to apply to the tree view.
+     */
     setFilter(filterText: string) {
         this.filterText = filterText;
         refreshPackages(this); // re-render the tree
     }
 
+    /**
+     * Gets the current list of packages as an array of RPackageInfo objects.
+     * @returns The current list of packages.
+     */
     getPackages(): RPackageInfo[] {
         return this.packages;
     }
 }
 
 export class RPackageItem extends vscode.TreeItem {
+    /**
+     * Creates a new RPackageItem representing an R package in the Positron tree view.
+     * @param pkg The RPackageInfo object describing the package.
+     */
     constructor(public pkg: RPackageInfo) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
