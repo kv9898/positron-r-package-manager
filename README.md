@@ -27,9 +27,28 @@ Manage your R extensions from within [Positron](https://positron.posit.co/) — 
 
 ---
 
+## 🌐 Language Support
+
+This extension currently supports the following languages:
+
+- 🇺🇸 **English**
+- 🇨🇳 **简体中文 (Simplified Chinese)**
+
+The UI will automatically display in your Positron language setting.  
+
+If you'd like to contribute translations or suggest improvements, feel free to open an issue or pull request!
+
+---
+
 ## ⚙️ Extension Settings
 
-This extension currently has no user-facing settings — it's fully automatic.
+This extension provides the following setting:
+
+- `positron-r-package-manager.filterOutdatedIfUpToDateElsewhere`  
+  *(boolean, default: `true`)*  
+  When enabled, filters out outdated R packages if an up-to-date version exists in another library during updates. This helps ruling out package installations that are not updatable in their current locations.
+
+You can configure this setting in your VS Code settings (`settings.json`) or through the Settings UI.
 
 ---
 
@@ -64,7 +83,6 @@ Licensed under the [MIT License](./LICENSE)
 ## 💡 Future Ideas
 
 - [ ] Install from GitHub or Bioconductor
-- [ ] Chinese language support
 
 ---
 
