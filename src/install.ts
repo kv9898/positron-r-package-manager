@@ -150,6 +150,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
  */
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
+    await refreshPackages(sidebarProvider);
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`);
     const rTmpPath = tmpPath.replace(/\\/g, '/');
 
