@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { RPackageItem, SidebarProvider } from './sidebar';
 import { refreshPackages } from './refresh';
-import { getFilterRedundant, getObserver } from './utils';
+import { getFilterRedundant, getObserver, _installpackages } from './utils';
 
 /**
  * Install R packages from the command palette.
@@ -37,18 +37,7 @@ export async function installPackages(sidebarProvider: SidebarProvider): Promise
         .map(pkg => `"${pkg}"`)
         .join(', ');
 
-    const rCode = `install.packages(c(${packages}))`;
-
-    positron.runtime.executeCode(
-        'r',
-        rCode,
-        true,
-        undefined,
-        positron.RuntimeCodeExecutionMode.Interactive
-    ).then(() => {
-        vscode.window.showInformationMessage(vscode.l10n.t('✅ Installed R package(s): {0}', input));
-        refreshPackages(sidebarProvider);
-    });
+    _installpackages(packages, sidebarProvider);
 }
 
 /**

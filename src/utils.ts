@@ -53,3 +53,21 @@ export function getObserver(
     };
     return observer;
 }
+
+export function _installpackages(packages: string, sidebarProvider: SidebarProvider) {
+        const rCode = `install.packages(c(${packages}))`;
+    
+        const observer= getObserver("Error while installing {0}: {1}", sidebarProvider, [packages], () => refreshPackages(sidebarProvider));
+        positron.runtime.executeCode(
+            'r',
+            rCode,
+            true,
+            undefined,
+            positron.RuntimeCodeExecutionMode.Interactive,
+            undefined,
+            observer
+        ).then(() => {
+            vscode.window.showInformationMessage(vscode.l10n.t('✅ Installed R package(s): {0}', packages));
+            refreshPackages(sidebarProvider);
+        });
+}
