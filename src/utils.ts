@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
 
+import { SidebarProvider } from './sidebar';
+import { refreshPackages } from './refresh';
+
 /**
  * Remove ANSI escape codes from a string, so that only the plain text remains.
  * This is for making error messages more readable.
@@ -29,27 +32,39 @@ export function getFilterRedundant(): boolean {
 
 export function getObserver(
     template: string,
+    sidebarProvider: SidebarProvider,
     templateArguments: (string | number | boolean)[] = [],
-    func?: () => void
+    onAfterError?: () => void
 ): positron.runtime.ExecutionObserver {
 
     function errorHandling(error: string) {
         const fullArgs = [...templateArguments, error];
         vscode.window.showErrorMessage(vscode.l10n.t(template, ...fullArgs));
-        if (func) {
-            func();
+        // Check for jsonlite-specific error
+        if (/jsonlite/i.test(error)) {
+            vscode.window.showWarningMessage(
+                vscode.l10n.t("The 'jsonlite' package appears to be missing. Would you like to install it?"),
+                vscode.l10n.t("Install")
+            ).then(selection => {
+                if (selection === vscode.l10n.t("Install")) {
+                    _installpackages('"jsonlite"', sidebarProvider);
+                    if (onAfterError) {
+                        onAfterError();
+                    }
+                }
+            });
+        } else if (onAfterError) {
+            onAfterError();
         }
     }
 
     const observer: positron.runtime.ExecutionObserver = {
         onError: (error: string) => {
-            error = stripAnsi(error);
-            errorHandling(error);
+            errorHandling(stripAnsi(error));
         },
         onFailed: (error: Error) => {
-            const message = stripAnsi(error.message);
-            errorHandling(message);
-        },
+            errorHandling(stripAnsi(error.message));
+        }
     };
     return observer;
 }

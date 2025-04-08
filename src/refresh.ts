@@ -70,7 +70,7 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
       )
       `.trim();
 
-    const observer = getObserver("Error refreshing packages: {0}");
+    const observer = getObserver("Error refreshing packages: {0}", sidebarProvider);
 
     positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer).then(() => {
       try {

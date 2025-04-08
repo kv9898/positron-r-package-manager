@@ -90,7 +90,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
   remove.packages("${item.pkg.name}", lib="${item.pkg.libpath}")
   `.trim();
 
-    const observer = getObserver("Error while uninstalling {0}: {1}", [item!.pkg.name], () => refreshPackages(sidebarProvider));
+    const observer = getObserver("Error while uninstalling {0}: {1}", sidebarProvider, [item!.pkg.name], () => refreshPackages(sidebarProvider));
     positron.runtime.executeCode(
         'r',
         rCode,
@@ -165,7 +165,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     )
     `.trim();
 
-    const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider));
+    const observer = getObserver("Error while fetching updates: {0}", sidebarProvider, undefined, () => refreshPackages(sidebarProvider));
 
     // Run R code to dump updates
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
