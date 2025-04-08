@@ -70,9 +70,9 @@ export function getObserver(
     }
 
     const observer: positron.runtime.ExecutionObserver = {
-        onError: (error: string) => {
-            errorHandling(stripAnsi(error));
-        },
+        // onError: (error: string) => {
+        //     errorHandling(stripAnsi(error));
+        // },
         onFailed: (error: Error) => {
             errorHandling(stripAnsi(error.message));
         }
