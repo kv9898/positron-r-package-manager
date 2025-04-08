@@ -4,7 +4,8 @@ All notable changes to the "positron-r-package-manager" extension will be docume
 
 ## 0.0.6
 
-- Added prompt to install `jsonlite` package
+- Added prompt to install the `jsonlite` package
+- Added automatic refresh when a new R session starts or the R console is switched
 
 ## 0.0.5
 
