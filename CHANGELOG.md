@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.0.6
+
+- Added prompt to install `jsonlite` package
+
 ## 0.0.5
 
 - Added localisation support for Chinese

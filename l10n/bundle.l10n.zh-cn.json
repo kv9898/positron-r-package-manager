@@ -1,4 +1,6 @@
 {
+  "Yes": "是",
+  "Install": "安装",
   "No R package information available yet.": "暂无 R 包信息。",
   "Try to refresh after R starts or clear search.": "请在R启动之后尝试刷新或清空搜索。",
   "Open Package Help": "打开包帮助界面",
@@ -12,6 +14,7 @@
   "Select a package to uninstall": "选择要卸载的包",
   "Please click a package to uninstall": "请点击要卸载的包",
   "Uninstall R package {0} {1} ({2})?": "确认卸载R包 {0} {1} ({2})?",
+  "Error while installing {0}: {1}": "安装 {0} 时出错: {1}",
   "Error while uninstalling {0}: {1}": "卸载 {0} 时出错: {1}",
   "Failed to uninstall {0} from {1}": "未能从 {1} 卸载 {0} ",
   "✅ Uninstalled {0}": "✅ 成功卸载 {0}",
@@ -25,5 +28,6 @@
   "Choose package installs to update": "请选择要升级的包安装信息",
   "Search R packages — press Esc to clear filter, Enter to apply": "搜索已安装的 R 包 — 按 Esc 清空过滤器, Enter 应用",
   "e.g. plot": "例如 plot",
-  "Error while fetching updates: {0}": "获取更新信息时出错: {0}"
+  "Error while fetching updates: {0}": "获取更新信息时出错: {0}",
+  "The 'jsonlite' package appears to be missing. Would you like to install it?": "检测到缺少 'jsonlite' 包。是否需要安装？"
 }

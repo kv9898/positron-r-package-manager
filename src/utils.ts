@@ -1,4 +1,8 @@
 import * as vscode from 'vscode';
+import * as positron from 'positron';
+
+import { SidebarProvider } from './sidebar';
+import { refreshPackages } from './refresh';
 
 /**
  * Remove ANSI escape codes from a string, so that only the plain text remains.
@@ -24,4 +28,61 @@ export function getFilterRedundant(): boolean {
         vscode.Uri.file(vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? "")
     );
     return config.get<boolean>('filterOutdatedIfUpToDateElsewhere', true);
+}
+
+export function getObserver(
+    template: string,
+    sidebarProvider: SidebarProvider,
+    templateArguments: (string | number | boolean)[] = [],
+    onAfterError?: () => void
+): positron.runtime.ExecutionObserver {
+
+    function errorHandling(error: string) {
+        const fullArgs = [...templateArguments, error];
+        vscode.window.showErrorMessage(vscode.l10n.t(template, ...fullArgs));
+        // Check for jsonlite-specific error
+        if (/jsonlite/i.test(error)) {
+            vscode.window.showWarningMessage(
+                vscode.l10n.t("The 'jsonlite' package appears to be missing. Would you like to install it?"),
+                vscode.l10n.t("Install")
+            ).then(selection => {
+                if (selection === vscode.l10n.t("Install")) {
+                    _installpackages('"jsonlite"', sidebarProvider);
+                    if (onAfterError) {
+                        onAfterError();
+                    }
+                }
+            });
+        } else if (onAfterError) {
+            onAfterError();
+        }
+    }
+
+    const observer: positron.runtime.ExecutionObserver = {
+        onError: (error: string) => {
+            errorHandling(stripAnsi(error));
+        },
+        onFailed: (error: Error) => {
+            errorHandling(stripAnsi(error.message));
+        }
+    };
+    return observer;
+}
+
+export function _installpackages(packages: string, sidebarProvider: SidebarProvider) {
+        const rCode = `install.packages(c(${packages}))`;
+    
+        const observer= getObserver("Error while installing {0}: {1}", sidebarProvider, [packages], () => refreshPackages(sidebarProvider));
+        positron.runtime.executeCode(
+            'r',
+            rCode,
+            true,
+            undefined,
+            positron.RuntimeCodeExecutionMode.Interactive,
+            undefined,
+            observer
+        ).then(() => {
+            vscode.window.showInformationMessage(vscode.l10n.t('✅ Installed R package(s): {0}', packages));
+            refreshPackages(sidebarProvider);
+        });
 }

@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { SidebarProvider, RPackageInfo } from './sidebar';
+import { getObserver } from './utils';
 
 
 /**
@@ -69,7 +70,9 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
       )
       `.trim();
 
-    positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent).then(() => {
+    const observer = getObserver("Error refreshing packages: {0}", sidebarProvider);
+
+    positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer).then(() => {
       try {
         const contents = fs.readFileSync(tmpPath, 'utf-8');
         const parsed: { Package: string; Version: string; LibPath: string; LocationType: string; Title: string; Loaded: boolean }[] = JSON.parse(contents);
