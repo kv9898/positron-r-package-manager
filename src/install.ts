@@ -48,6 +48,7 @@ export async function installPackages(sidebarProvider: SidebarProvider): Promise
  * @returns A Promise that resolves when the uninstallation is complete.
  */
 export async function uninstallPackage(item: RPackageItem | undefined, sidebarProvider: SidebarProvider): Promise<void> {
+    await refreshPackages(sidebarProvider);
     if (!item) {
         const all = sidebarProvider.getPackages?.();
         if (!all || all.length === 0) {
