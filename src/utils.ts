@@ -30,6 +30,17 @@ export function getFilterRedundant(): boolean {
     return config.get<boolean>('filterOutdatedIfUpToDateElsewhere', true);
 }
 
+/**
+ * Returns an ExecutionObserver that shows an error message using the given template
+ * string, formatted with the given template arguments. If the error is due to a
+ * missing 'jsonlite' package, it will prompt the user to install it. Optionally,
+ * it can call a function after the error handling is finished.
+ * @param template The vscode.l10n template string to use for the error message.
+ * @param sidebarProvider The SidebarProvider to use for installing the jsonlite
+ *     package if necessary.
+ * @param templateArguments An array of arguments to pass to the template string, before the error message.
+ * @param onAfterError An optional function to call after the error handling is finished.
+ */
 export function getObserver(
     template: string,
     sidebarProvider: SidebarProvider,
@@ -68,6 +79,13 @@ export function getObserver(
     };
     return observer;
 }
+
+/**
+ * Installs one or more R packages from the command line.
+ * @param packages A comma-separated string of R package names to install.
+ * @param sidebarProvider The SidebarProvider instance to refresh after installation.
+ * @returns A promise that resolves when the installation is complete.
+ */
 
 export function _installpackages(packages: string, sidebarProvider: SidebarProvider) {
         const rCode = `install.packages(c(${packages}))`;
