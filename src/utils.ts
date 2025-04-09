@@ -83,20 +83,26 @@ export function getObserver(
  * @returns A promise that resolves when the installation is complete.
  */
 
-export function _installpackages(packages: string) {
-        const rCode = `install.packages(c(${packages}))`;
-    
-        const observer= getObserver("Error while installing {0}: {1}", [packages]);
-        positron.runtime.executeCode(
-            'r',
-            rCode,
-            true,
-            undefined,
-            positron.RuntimeCodeExecutionMode.Interactive,
-            undefined,
-            observer
-        ).then(() => {
-            vscode.window.showInformationMessage(vscode.l10n.t('✅ Installed R package(s): {0}', packages));
-            vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
-        });
-}
+export function _installpackages(packages: string, path?: string) {
+    // Normalize path for R if provided
+    const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';
+  
+    const rCode = `install.packages(c(${packages})${libOption})`;
+  
+    const observer = getObserver("Error while installing {0}: {1}", [packages]);
+  
+    positron.runtime.executeCode(
+      'r',
+      rCode,
+      true,
+      undefined,
+      positron.RuntimeCodeExecutionMode.Interactive,
+      undefined,
+      observer
+    ).then(() => {
+      vscode.window.showInformationMessage(
+        vscode.l10n.t('✅ Installed R package(s): {0}', packages)
+      );
+      vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+    });
+  }

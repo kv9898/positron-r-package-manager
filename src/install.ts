@@ -83,7 +83,7 @@ async function installUI(path: string): Promise<void> {
       
     switch (selection?.value) {
         case 'cran':
-            await installFromCran();
+            await installFromCran(path);
             break;
         case 'github':
             break;
@@ -92,7 +92,7 @@ async function installUI(path: string): Promise<void> {
     }
 }
 
-async function installFromCran(): Promise<void> {
+async function installFromCran(path: string): Promise<void> {
     const input = await vscode.window.showInputBox({
         title: vscode.l10n.t('Install R Packages'),
         prompt: vscode.l10n.t('Packages (separate multiple with space or comma)'),
@@ -110,6 +110,6 @@ async function installFromCran(): Promise<void> {
         .map(pkg => `"${pkg}"`)
         .join(', ');
 
-    _installpackages(packages);
+    _installpackages(packages, path);
 }
 
