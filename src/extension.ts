@@ -4,7 +4,8 @@ import * as vscode from 'vscode';
 import * as positron from 'positron';
 import { refreshPackages } from './refresh';
 import { SidebarProvider, RPackageItem } from './sidebar';
-import { installPackages, uninstallPackage, updatePackages } from './install';
+import { installPackages} from './install';
+import { uninstallPackage, updatePackages } from './update-uninstall';
 import { getChangeForegroundEvent, getRegisterRuntimeEvent } from './events';
 
 // This method is called when your extension is activated
@@ -18,8 +19,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarProvider = new SidebarProvider();
 
 	// Refresh the package list upon new R runtime or switched R foreground session
-	const registerRuntimeEvent = getRegisterRuntimeEvent(sidebarProvider);
-	const changeForegroundEvent = getChangeForegroundEvent(sidebarProvider);
+	const registerRuntimeEvent = getRegisterRuntimeEvent();
+	const changeForegroundEvent = getChangeForegroundEvent();
 	context.subscriptions.push(registerRuntimeEvent, changeForegroundEvent);
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -71,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// install packages
 		vscode.commands.registerCommand('positron-r-package-manager.installPackages', () => {
-			installPackages(sidebarProvider);
+			installPackages();
 		}),
 		// uninstall packages
 		vscode.commands.registerCommand('positron-r-package-manager.uninstallPackage', (item: RPackageItem | undefined) => {

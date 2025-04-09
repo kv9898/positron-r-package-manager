@@ -11,10 +11,10 @@ import { refreshPackages } from './refresh';
  * @param sidebarProvider The SidebarProvider instance to refresh
  * @returns A disposable that can be used to unregister the event
  */
-export function getRegisterRuntimeEvent(sidebarProvider: SidebarProvider): vscode.Disposable {
+export function getRegisterRuntimeEvent(): vscode.Disposable {
     const RegisterRuntimeEvent = positron.runtime.onDidRegisterRuntime((event) => {
         if (event.languageId !== 'r') { return; };
-        refreshPackages(sidebarProvider);
+        vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     });
     return RegisterRuntimeEvent;
 }
@@ -27,11 +27,11 @@ export function getRegisterRuntimeEvent(sidebarProvider: SidebarProvider): vscod
  * @returns A disposable that can be used to unregister the event
  */
 
-export function getChangeForegroundEvent(sidebarProvider: SidebarProvider): vscode.Disposable {
+export function getChangeForegroundEvent(): vscode.Disposable {
     const ChangeForegroundEvent = positron.runtime.onDidChangeForegroundSession((event) => {
         // Only refresh if the new session is an R session
         if (!event?.startsWith('r-')) { return; };
-        refreshPackages(sidebarProvider);
+        vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     });
 
     return ChangeForegroundEvent;

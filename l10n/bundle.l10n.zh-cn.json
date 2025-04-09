@@ -4,7 +4,6 @@
   "No R package information available yet.": "暂无 R 包信息。",
   "Try to refresh after R starts or clear search.": "请在R启动之后尝试刷新或清空搜索。",
   "Open Package Help": "打开包帮助界面",
-  "[Positron] Failed to delete temp file:": "[Positron] 删除临时文件失败:",
   "Failed to read or parse R output: ": "无法读取或解析 R 输出: ",
   "Install R Packages": "安装 R 包",
   "Packages (separate multiple with space or comma)": "包名(多个用空格或逗号分隔)",
@@ -29,5 +28,15 @@
   "Search R packages — press Esc to clear filter, Enter to apply": "搜索已安装的 R 包 — 按 Esc 清空过滤器, Enter 应用",
   "e.g. plot": "例如 plot",
   "Error while fetching updates: {0}": "获取更新信息时出错: {0}",
-  "The 'jsonlite' package appears to be missing. Would you like to install it?": "检测到缺少 'jsonlite' 包。是否需要安装？"
+  "The 'jsonlite' package appears to be missing. Would you like to install it?": "检测到缺少 'jsonlite' 包。是否需要安装？",
+  "Error while fetching library paths: {0}": "获取库路径时出错: {0}",
+  "Failed to read library paths from R output: {0}" : "无法从 R 输出中读取库路径: {0}",
+  "Install from CRAN (Recommended)": "从 CRAN 安装 （推荐）",
+  "Install from GitHub": "从 GitHub 安装",
+  "Install from local archive (.tar.gz or .zip)": "从本地文件安装 (.tar.gz 或 .zip)",
+  "Install to another directory (current: {0})": "安装到另一个目录 (当前: {0})",
+  "Select installation method": "选择安装方式",
+  "Where would you like to install packages from?": "请选择安装包的来源",
+  "Enter GitHub repo (e.g., tidyverse/ggplot2)": "请输入 GitHub 仓库名称 (例如 tidyverse/ggplot2)"
+
 }

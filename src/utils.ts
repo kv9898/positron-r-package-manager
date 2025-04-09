@@ -43,7 +43,6 @@ export function getFilterRedundant(): boolean {
  */
 export function getObserver(
     template: string,
-    sidebarProvider: SidebarProvider,
     templateArguments: (string | number | boolean)[] = [],
     onAfterError?: () => void
 ): positron.runtime.ExecutionObserver {
@@ -58,7 +57,7 @@ export function getObserver(
                 vscode.l10n.t("Install")
             ).then(selection => {
                 if (selection === vscode.l10n.t("Install")) {
-                    _installpackages('"jsonlite"', sidebarProvider);
+                    _installpackages('"jsonlite"');
                 }
             });
         } else if (onAfterError) {
@@ -84,20 +83,26 @@ export function getObserver(
  * @returns A promise that resolves when the installation is complete.
  */
 
-export function _installpackages(packages: string, sidebarProvider: SidebarProvider) {
-        const rCode = `install.packages(c(${packages}))`;
-    
-        const observer= getObserver("Error while installing {0}: {1}", sidebarProvider, [packages]);
-        positron.runtime.executeCode(
-            'r',
-            rCode,
-            true,
-            undefined,
-            positron.RuntimeCodeExecutionMode.Interactive,
-            undefined,
-            observer
-        ).then(() => {
-            vscode.window.showInformationMessage(vscode.l10n.t('✅ Installed R package(s): {0}', packages));
-            refreshPackages(sidebarProvider);
-        });
-}
+export function _installpackages(packages: string, path?: string) {
+    // Normalize path for R if provided
+    const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';
+  
+    const rCode = `install.packages(c(${packages})${libOption})`;
+  
+    const observer = getObserver("Error while installing {0}: {1}", [packages]);
+  
+    positron.runtime.executeCode(
+      'r',
+      rCode,
+      true,
+      undefined,
+      positron.RuntimeCodeExecutionMode.Interactive,
+      undefined,
+      observer
+    ).then(() => {
+      vscode.window.showInformationMessage(
+        vscode.l10n.t('✅ Installed R package(s): {0}', packages)
+      );
+      vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+    });
+  }

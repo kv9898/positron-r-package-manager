@@ -19,7 +19,85 @@ import { getFilterRedundant, getObserver, _installpackages } from './utils';
  *
  * @param sidebarProvider The {@link SidebarProvider} instance to refresh after installation.
  */
-export async function installPackages(sidebarProvider: SidebarProvider): Promise<void> {
+export async function installPackages(): Promise<void> {
+    // get lib paths
+    const paths = await getLibPaths();
+
+    await installUI(paths[0]);
+}
+
+async function getLibPaths(): Promise<string[]> {
+
+    const tmpPath = path.join(os.tmpdir(), `r_libPaths_${Date.now()}.json`);
+    const rTmpPath = tmpPath.replace(/\\/g, '/');
+
+    const rCode = `
+    jsonlite::write_json(
+      .libPaths(),
+      path = "${rTmpPath}",
+      auto_unbox = FALSE
+    )
+    `.trim();
+
+    const observer = getObserver("Error while fetching library paths: {0}");
+
+    // Run R code to dump updates
+    await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
+
+    // Parse Json
+    try {
+        const content = fs.readFileSync(tmpPath, 'utf-8').trim();
+        const parsed: string[] = JSON.parse(content);
+
+        try {
+            fs.unlinkSync(tmpPath); // Safe delete
+        } catch (unlinkErr) {
+            console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
+            // No user-facing message, just dev-side warning
+        }
+
+        return parsed;
+    } catch (err) {
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to read library paths from R output: {0}', err instanceof Error ? err.message : String(err)));
+        return [];
+    }
+}
+
+async function installUI(path: string): Promise<void> {
+    const options = [
+        { label: vscode.l10n.t('Install from CRAN (Recommended)'), value: 'cran' },
+        { label: vscode.l10n.t('Install from GitHub'), value: 'github' },
+        { label: vscode.l10n.t('Install from local archive (.tar.gz or .zip)'), value: 'local' },
+        {
+            label: vscode.l10n.t("Install to another directory (current: {0})", path),
+            value: 'customLib'
+        }
+    ];
+
+    const selection = await vscode.window.showQuickPick(options, {
+        title: vscode.l10n.t('Select installation method'),
+        placeHolder: vscode.l10n.t('Where would you like to install packages from?'),
+        ignoreFocusOut: true
+    });
+
+
+    switch (selection?.value) {
+        case 'cran':
+            await installFromCran(path);
+            break;
+        case 'github':
+            await installFromGithub(path);
+            break;
+        case 'local':
+            await installFromLocal(path);
+            break;
+        case 'customLib':
+            await changeLibPath();
+            break;
+    }
+}
+
+async function installFromCran(libPath: string): Promise<void> {
     const input = await vscode.window.showInputBox({
         title: vscode.l10n.t('Install R Packages'),
         prompt: vscode.l10n.t('Packages (separate multiple with space or comma)'),
@@ -37,256 +115,123 @@ export async function installPackages(sidebarProvider: SidebarProvider): Promise
         .map(pkg => `"${pkg}"`)
         .join(', ');
 
-    _installpackages(packages, sidebarProvider);
+    _installpackages(packages, libPath);
 }
 
-/**
- * Uninstalls an R package from the active R process.
- * If no item is provided, it will prompt the user to select a package to uninstall.
- * @param item The RPackageItem to uninstall. If undefined, it will prompt the user to select one.
- * @param sidebarProvider The SidebarProvider instance to refresh after uninstalling.
- * @returns A Promise that resolves when the uninstallation is complete.
- */
-export async function uninstallPackage(item: RPackageItem | undefined, sidebarProvider: SidebarProvider): Promise<void> {
-    await refreshPackages(sidebarProvider);
-    if (!item) {
-        const all = sidebarProvider.getPackages?.();
-        if (!all || all.length === 0) {
-            vscode.window.showInformationMessage(vscode.l10n.t('No R packages available to uninstall.'));
-            return;
-        }
+async function installFromGithub(libPath: string): Promise<void> {
+    const repo = await vscode.window.showInputBox({
+        title: vscode.l10n.t(vscode.l10n.t('Install from GitHub')),
+        prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2)'),
+        ignoreFocusOut: true
+    });
 
-        const selection = await vscode.window.showQuickPick(
-            all.map(pkg => ({
-                label: `${pkg.name} ${pkg.version} (${pkg.locationtype})`,
-                description: `(${pkg.libpath}) ${pkg.title}`,
-                pkg
-            })),
-            {
-                title: vscode.l10n.t('Select a package to uninstall'),
-                placeHolder: vscode.l10n.t('Please click a package to uninstall'),
-                ignoreFocusOut: true
-            }
-        );
+    if (!repo?.trim()) { return; };
 
-        if (!selection) { return; };
+    const rCode = libPath
+        ? `withr::with_libpaths("${libPath.replace(/\\/g, '/')}", devtools::install_github("${repo}"))`
+        : `devtools::install_github("${repo}")`;
 
-        item = {
-            pkg: selection.pkg
-        } as RPackageItem;
-    }
-
-    const confirm = await vscode.window.showWarningMessage(
-        vscode.l10n.t("Uninstall R package {0} {1} ({2})?", item.pkg.name, item.pkg.version, item.pkg.locationtype),
-        { modal: true },
-        vscode.l10n.t('Yes')
-    );
-
-    if (confirm !== vscode.l10n.t('Yes')) { return; };
-
-    const rCode = `
-  if ("${item.pkg.name}" %in% loadedNamespaces()) {
-    detach("package:${item.pkg.name}", unload = TRUE)
-  }
-  remove.packages("${item.pkg.name}", lib="${item.pkg.libpath}")
-  `.trim();
-
-    const observer = getObserver("Error while uninstalling {0}: {1}", sidebarProvider, [item!.pkg.name], () => refreshPackages(sidebarProvider));
-    positron.runtime.executeCode(
+    await positron.runtime.executeCode(
         'r',
         rCode,
         true,
         undefined,
-        positron.RuntimeCodeExecutionMode.Interactive,
-        undefined,
-        observer
-    ).then(
-        () => {
-            refreshPackages(sidebarProvider).then(() => {
-                const packages = sidebarProvider.getPackages?.() || [];
-
-                const stillExists = packages.some(pkg =>
-                    pkg.name === item!.pkg.name && pkg.libpath === item!.pkg.libpath
-                );
-
-                if (stillExists) {
-                    vscode.window.showErrorMessage(vscode.l10n.t("Failed to uninstall {0} from {1}", item!.pkg.name, item!.pkg.libpath));
-                } else {
-                    vscode.window.showInformationMessage(vscode.l10n.t("✅ Uninstalled {0}", item!.pkg.name));
-                }
-            }).catch(err => {
-                vscode.window.showErrorMessage(vscode.l10n.t("Error refreshing packages: {0}", err));
-            });
-        },
+        positron.RuntimeCodeExecutionMode.Interactive
     );
+    vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+    return;
 }
 
-/**
- * Updates outdated R packages by fetching available updates, prompting the user to select
- * which packages to update, and executing the update process in the R runtime.
- * 
- * This function writes a temporary JSON file containing information about outdated packages,
- * including package name, library path, installed version, and repository version. It then
- * parses the JSON file and filters out packages with up-to-date versions in other library paths.
- * 
- * If there are outdated packages, the user is prompted to select which packages to update.
- * The selected packages are then updated by executing `install.packages()` for each one.
- * 
- * After updating, the package list in the sidebar is refreshed to reflect the changes.
- * 
- * @param sidebarProvider - The SidebarProvider instance responsible for managing the
- *                          R package tree view.
- * @returns A promise that resolves when the update process is complete.
- */
+async function installFromLocal(libPath: string): Promise<void>{
+    const result = await vscode.window.showOpenDialog({
+        filters: { 'R Packages': ['tar.gz', 'zip'] },
+        canSelectMany: false,
+        openLabel: vscode.l10n.t('Install package')
+      });
 
-export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
-    await refreshPackages(sidebarProvider);
-    const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`);
-    const rTmpPath = tmpPath.replace(/\\/g, '/');
+      if (!result || !result[0]) {return;};
+;
+      const path = result[0].fsPath.replace(/\\/g, '/');
 
-    const rCode = `
-    (function() {
-      jsonlite::write_json(
-        {
-          result <- do.call(rbind, lapply(.libPaths(), function(lib) {
-            pkgs <- tryCatch(old.packages(lib.loc = lib), error = function(e) NULL)
-            if (is.null(pkgs) || nrow(pkgs) == 0) return(NULL)
-    
-            data.frame(
-              Package = rownames(pkgs),
-              LibPath = lib,
-              Installed = pkgs[, "Installed"],
-              ReposVer = pkgs[, "ReposVer"],
-              stringsAsFactors = FALSE
-            )
-          }))
-    
-          if (is.null(result)) list() else result[order(result$Package, result$LibPath), ]
-        },
-        path = "${rTmpPath}",
-        auto_unbox = TRUE
-      )
-    })()
-    `.trim();
+      const rCode = libPath
+        ? `install.packages("${path}", repos = NULL, type = "source", lib = "${libPath}")`
+        : `install.packages("${path}", repos = NULL, type = "source")`;
 
-    const observer = getObserver("Error while fetching updates: {0}", sidebarProvider, undefined, () => refreshPackages(sidebarProvider));
-
-    // Run R code to dump updates
-    await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
-
-    // Parse updates
-    let parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[] = [];
-    try {
-        parsed = parsePackageUpdateJson(tmpPath);
-    } catch (err) {
-        vscode.window.showErrorMessage(vscode.l10n.t('Failed to retrieve updatable packages.'));
-        return;
-    }
-
-    if (getFilterRedundant()) {
-        const allInstalled = sidebarProvider.getPackages?.() || [];
-
-        parsed = parsed.filter(outdated => {
-            const others = allInstalled.filter(p => p.name === outdated.Package);
-            return !others.some(p => p.version === outdated.ReposVer);
-        });
-    }
-
-    if (parsed.length === 0) {
-        vscode.window.showInformationMessage(vscode.l10n.t('✅ All R packages are up to date!'));
-        return;
-    }
-
-    // Prompt user to select which packages to update
-    const selected = await promptPackageUpdateSelection(parsed);
-    if (!selected || selected.length === 0) {
-        vscode.window.showInformationMessage(vscode.l10n.t('No packages selected for update.'));
-        return;
-    }
-
-    // Build update commands per package
-    const updateCommands = selected.map(pkg => {
-        const libPath = pkg.LibPath.replace(/\\/g, '/');
-        return `install.packages("${pkg.Package}", lib = "${libPath}")`;
-    });
-
-    const updateCode = updateCommands.join('\n');
-
-    await positron.runtime.executeCode(
+      await positron.runtime.executeCode(
         'r',
-        updateCode,
+        rCode,
         true,
         undefined,
         positron.RuntimeCodeExecutionMode.Interactive
-    );
-
-    vscode.window.showInformationMessage(vscode.l10n.t("✅ Updated {0} R package(s) in-place", selected.length));
-    refreshPackages(sidebarProvider);
+      );
+      vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+      return;
 }
 
-/**
- * Reads a JSON file containing package information and returns an array of package
- * information objects with properties 'Package', 'LibPath', 'Installed', and 'ReposVer'.
- * If the file is empty, or contains invalid JSON, an empty array is returned.
- *
- * This function is used to parse the result of a temporary R script that dumps package
- * information in JSON format. The script is executed by the updatePackages() function.
- *
- * @param tmpPath - the path to the temporary JSON file to read
- * @returns an array of package information objects
- */
-function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: string; Installed: string; ReposVer: string }[] {
-    const content = fs.readFileSync(tmpPath, 'utf-8').trim();
+export async function changeLibPath(): Promise<void> {
+    const existingPaths = await getLibPaths();
 
-    // Optional: clean up
-    try {
-        fs.unlinkSync(tmpPath);
-    } catch (unlinkErr) {
-        console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
-        // No user-facing message, just dev-side warning
-    }
+    const qp = vscode.window.createQuickPick();
+    qp.title = vscode.l10n.t('Select Library Path');
+    qp.placeholder = vscode.l10n.t('Choose an existing path or type a new one');
+    qp.ignoreFocusOut = true;
 
-    if (content === '{}' || content === '[]' || content === 'null') {
-        return [];
-    }
+    const baseItems: vscode.QuickPickItem[] = [
+        ...existingPaths.map(p => ({
+            label: p,
+            description: vscode.l10n.t('Existing library path')
+        })),
+        {
+            label: vscode.l10n.t('📁 Browse for a new library path...'),
+            description: vscode.l10n.t('Select a custom directory')
+        }
+    ];
 
-    const parsed = JSON.parse(content);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-        return [];
-    }
+    qp.items = baseItems;
+    qp.show();
 
-    return parsed;
-}
+    qp.onDidAccept(async () => {
+        const input = qp.value.trim();
+        let finalPath: string | undefined;
 
-/**
- * Shows a QuickPick selection UI to the user, given a list of parsed package
- * information objects. The user is prompted to select which packages to update.
- *
- * Each package information object should have the following properties:
- * - `Package`: the name of the package
- * - `LibPath`: the path to the library directory where the package is installed
- * - `Installed`: the currently installed version of the package
- * - `ReposVer`: the version of the package available from the repository
- *
- * The function returns a promise that resolves to the array of selected package
- * information objects, or undefined if the user cancels the selection.
- */
-async function promptPackageUpdateSelection(
-    parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[]
-): Promise<typeof parsed | undefined> {
-    const items = parsed.map(pkg => ({
-        label: `${pkg.Package}  (${pkg.Installed} → ${pkg.ReposVer})`,
-        description: pkg.LibPath,
-        picked: true,
-        ...pkg
-    }));
+        const selected = qp.selectedItems[0];
 
-    const selected = await vscode.window.showQuickPick(items, {
-        title: vscode.l10n.t('Select R packages to update'),
-        canPickMany: true,
-        placeHolder: vscode.l10n.t('Choose package installs to update'),
-        ignoreFocusOut: true
+        // Case 1: Browse
+        if (selected?.label.includes('Browse')) {
+            const folder = await vscode.window.showOpenDialog({
+                canSelectFolders: true,
+                canSelectMany: false,
+                openLabel: vscode.l10n.t('Use as Library Path')
+            });
+            if (folder?.length) {
+                finalPath = folder[0].fsPath;
+            }
+        }
+
+        // Case 2: Picked from existing list
+        else if (selected) {
+            finalPath = selected.label;
+        }
+
+        // Case 3: Typed path manually
+        else if (input) {
+            // Check if directory exists or is creatable
+            if (fs.existsSync(input)) {
+                finalPath = input;
+            } else {
+                try {
+                    fs.mkdirSync(input, { recursive: true });
+                    finalPath = input;
+                } catch (err) {
+                    vscode.window.showErrorMessage(vscode.l10n.t('Failed to create directory: {0}', String(err)));
+                }
+            }
+        }
+
+        qp.hide();
+
+        if (finalPath) {
+            await installUI(finalPath);
+        }
     });
-
-    return selected;
 }
