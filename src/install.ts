@@ -37,7 +37,47 @@ export async function installPackages(sidebarProvider: SidebarProvider): Promise
         .map(pkg => `"${pkg}"`)
         .join(', ');
 
-    _installpackages(packages, sidebarProvider);
+    _installpackages(packages);
 }
 
+async function getLibPaths(): Promise<string[]> {
+
+    const tmpPath = path.join(os.tmpdir(), `r_libPaths_${Date.now()}.json`);
+    const rTmpPath = tmpPath.replace(/\\/g, '/');
+
+    const rCode = `
+    jsonlite::write_json(
+      .libPaths(),
+      path = "${rTmpPath}",
+      auto_unbox = FALSE
+    )
+    `.trim();
+
+    const observer = getObserver("Error while fetching library paths: {0}");
+
+    // Run R code to dump updates
+    await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
+
+    // Parse Json
+    try {
+        const content = fs.readFileSync(tmpPath, 'utf-8').trim();
+        const parsed: string[] = JSON.parse(content);
+
+        try {
+            fs.unlinkSync(tmpPath); // Safe delete
+        } catch (unlinkErr) {
+            console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
+            // No user-facing message, just dev-side warning
+        }
+
+        return parsed;
+    } catch (err) {
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to read library paths from R output: {0}', err instanceof Error ? err.message : String(err)));
+        return [];
+    }
+}
+
+// function installUI(): void {
+//     // vscode.window.showQuickPick();
+// }
 

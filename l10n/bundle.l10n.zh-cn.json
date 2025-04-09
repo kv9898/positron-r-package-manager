@@ -28,5 +28,7 @@
   "Search R packages — press Esc to clear filter, Enter to apply": "搜索已安装的 R 包 — 按 Esc 清空过滤器, Enter 应用",
   "e.g. plot": "例如 plot",
   "Error while fetching updates: {0}": "获取更新信息时出错: {0}",
-  "The 'jsonlite' package appears to be missing. Would you like to install it?": "检测到缺少 'jsonlite' 包。是否需要安装？"
+  "The 'jsonlite' package appears to be missing. Would you like to install it?": "检测到缺少 'jsonlite' 包。是否需要安装？",
+  "Error while fetching library paths: {0}": "获取库路径时出错: {0}",
+  "Failed to read library paths from R output: {0}" : "无法从 R 输出中读取库路径: {0}"
 }
