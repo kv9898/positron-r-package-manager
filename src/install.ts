@@ -20,24 +20,10 @@ import { getFilterRedundant, getObserver, _installpackages } from './utils';
  * @param sidebarProvider The {@link SidebarProvider} instance to refresh after installation.
  */
 export async function installPackages(sidebarProvider: SidebarProvider): Promise<void> {
-    const input = await vscode.window.showInputBox({
-        title: vscode.l10n.t('Install R Packages'),
-        prompt: vscode.l10n.t('Packages (separate multiple with space or comma)'),
-        placeHolder: vscode.l10n.t('e.g. ggplot2 dplyr tidyr'),
-        ignoreFocusOut: true,
-    });
+    // get lib paths
+    const paths = await getLibPaths();
 
-    if (!input?.trim()) {
-        return;
-    }
-
-    const packages = input
-        .split(/[\s,]+/)
-        .filter(pkg => pkg.length)
-        .map(pkg => `"${pkg}"`)
-        .join(', ');
-
-    _installpackages(packages);
+    await installUI(paths[0]);
 }
 
 async function getLibPaths(): Promise<string[]> {
@@ -77,7 +63,53 @@ async function getLibPaths(): Promise<string[]> {
     }
 }
 
-// function installUI(): void {
-//     // vscode.window.showQuickPick();
-// }
+async function installUI(path: string): Promise<void> {
+    const options = [
+        { label: vscode.l10n.t('Install from CRAN (Recommended)'), value: 'cran' },
+        { label: vscode.l10n.t('Install from GitHub'), value: 'github' },
+        { label: vscode.l10n.t('Install from local archive (.tar.gz or .zip)'), value: 'local' },
+        {
+          label: vscode.l10n.t("Install to another directory (current: {0})", path),
+          value: 'customLib'
+        }
+      ];
+    
+    const selection = await vscode.window.showQuickPick(options, {
+        title: vscode.l10n.t('Select installation method'),
+        placeHolder: vscode.l10n.t('Where would you like to install packages from?'),
+        ignoreFocusOut: true
+      });
+
+      
+    switch (selection?.value) {
+        case 'cran':
+            await installFromCran();
+            break;
+        case 'github':
+            break;
+        case 'local':
+            break;
+    }
+}
+
+async function installFromCran(): Promise<void> {
+    const input = await vscode.window.showInputBox({
+        title: vscode.l10n.t('Install R Packages'),
+        prompt: vscode.l10n.t('Packages (separate multiple with space or comma)'),
+        placeHolder: vscode.l10n.t('e.g. ggplot2 dplyr tidyr'),
+        ignoreFocusOut: true,
+    });
+
+    if (!input?.trim()) {
+        return;
+    }
+
+    const packages = input
+        .split(/[\s,]+/)
+        .filter(pkg => pkg.length)
+        .map(pkg => `"${pkg}"`)
+        .join(', ');
+
+    _installpackages(packages);
+}
 
