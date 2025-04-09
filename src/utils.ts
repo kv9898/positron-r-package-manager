@@ -43,7 +43,6 @@ export function getFilterRedundant(): boolean {
  */
 export function getObserver(
     template: string,
-    sidebarProvider: SidebarProvider,
     templateArguments: (string | number | boolean)[] = [],
     onAfterError?: () => void
 ): positron.runtime.ExecutionObserver {
@@ -58,7 +57,7 @@ export function getObserver(
                 vscode.l10n.t("Install")
             ).then(selection => {
                 if (selection === vscode.l10n.t("Install")) {
-                    _installpackages('"jsonlite"', sidebarProvider);
+                    _installpackages('"jsonlite"');
                 }
             });
         } else if (onAfterError) {
@@ -84,10 +83,10 @@ export function getObserver(
  * @returns A promise that resolves when the installation is complete.
  */
 
-export function _installpackages(packages: string, sidebarProvider: SidebarProvider) {
+export function _installpackages(packages: string) {
         const rCode = `install.packages(c(${packages}))`;
     
-        const observer= getObserver("Error while installing {0}: {1}", sidebarProvider, [packages]);
+        const observer= getObserver("Error while installing {0}: {1}", [packages]);
         positron.runtime.executeCode(
             'r',
             rCode,
@@ -98,6 +97,6 @@ export function _installpackages(packages: string, sidebarProvider: SidebarProvi
             observer
         ).then(() => {
             vscode.window.showInformationMessage(vscode.l10n.t('✅ Installed R package(s): {0}', packages));
-            refreshPackages(sidebarProvider);
+            vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
         });
 }

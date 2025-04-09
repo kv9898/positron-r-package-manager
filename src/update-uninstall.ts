@@ -48,10 +48,10 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
     const confirm = await vscode.window.showWarningMessage(
         vscode.l10n.t("Uninstall R package {0} {1} ({2})?", item.pkg.name, item.pkg.version, item.pkg.locationtype),
         { modal: true },
-         vscode.l10n.t('Yes')
+        vscode.l10n.t('Yes')
     );
 
-    if (confirm !==  vscode.l10n.t('Yes')) { return; };
+    if (confirm !== vscode.l10n.t('Yes')) { return; };
 
     const rCode = `
   if ("${item.pkg.name}" %in% loadedNamespaces()) {
@@ -60,7 +60,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
   remove.packages("${item.pkg.name}", lib="${item.pkg.libpath}")
   `.trim();
 
-    const observer = getObserver("Error while uninstalling {0}: {1}", sidebarProvider, [item!.pkg.name], () => refreshPackages(sidebarProvider));
+    const observer = getObserver("Error while uninstalling {0}: {1}", [item!.pkg.name], () => refreshPackages(sidebarProvider));
     positron.runtime.executeCode(
         'r',
         rCode,
@@ -135,7 +135,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     )
     `.trim();
 
-    const observer = getObserver("Error while fetching updates: {0}", sidebarProvider, undefined, () => refreshPackages(sidebarProvider));
+    const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider));
 
     // Run R code to dump updates
     await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
