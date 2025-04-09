@@ -170,34 +170,67 @@ async function installFromGithub(libPath: string): Promise<void> {
 export async function changeLibPath(): Promise<void> {
     const existingPaths = await getLibPaths();
 
-    const options = [
-        ...existingPaths.map(p => ({ label: p, description: 'Existing library path' })),
-        { label: '📁 Enter a new library path...', description: 'Custom path' }
+    const qp = vscode.window.createQuickPick();
+    qp.title = vscode.l10n.t('Select Library Path');
+    qp.placeholder = vscode.l10n.t('Choose an existing path or type a new one');
+    qp.ignoreFocusOut = true;
+
+    const baseItems: vscode.QuickPickItem[] = [
+        ...existingPaths.map(p => ({
+            label: p,
+            description: vscode.l10n.t('Existing library path')
+        })),
+        {
+            label: vscode.l10n.t('📁 Browse for a new library path...'),
+            description: vscode.l10n.t('Select a custom directory')
+        }
     ];
 
-    const selection = await vscode.window.showQuickPick(options, {
-        title: vscode.l10n.t('Select Library Path'),
-        placeHolder: vscode.l10n.t('Choose from existing library paths or enter a new one'),
-        ignoreFocusOut: true
+    qp.items = baseItems;
+    qp.show();
+
+    qp.onDidAccept(async () => {
+        const input = qp.value.trim();
+        let finalPath: string | undefined;
+
+        const selected = qp.selectedItems[0];
+
+        // Case 1: Browse
+        if (selected?.label.includes('Browse')) {
+            const folder = await vscode.window.showOpenDialog({
+                canSelectFolders: true,
+                canSelectMany: false,
+                openLabel: vscode.l10n.t('Use as Library Path')
+            });
+            if (folder?.length) {
+                finalPath = folder[0].fsPath;
+            }
+        }
+
+        // Case 2: Picked from existing list
+        else if (selected) {
+            finalPath = selected.label;
+        }
+
+        // Case 3: Typed path manually
+        else if (input) {
+            // Check if directory exists or is creatable
+            if (fs.existsSync(input)) {
+                finalPath = input;
+            } else {
+                try {
+                    fs.mkdirSync(input, { recursive: true });
+                    finalPath = input;
+                } catch (err) {
+                    vscode.window.showErrorMessage(vscode.l10n.t('Failed to create directory: {0}', String(err)));
+                }
+            }
+        }
+
+        qp.hide();
+
+        if (finalPath) {
+            await installUI(finalPath);
+        }
     });
-
-    if (!selection) {return;};
-
-    let finalPath = selection.label;
-
-    // Handle custom entry
-    if (selection.label.includes('Enter a new')) {
-        const input = await vscode.window.showInputBox({
-            title: vscode.l10n.t('Enter Custom Library Path'),
-            prompt: vscode.l10n.t('Type a path to use as a library directory'),
-            placeHolder: vscode.l10n.t('e.g. C:/Users/YourName/Documents/R/win-library/4.3'),
-            ignoreFocusOut: true
-        });
-
-        if (!input?.trim()) {return;};
-        finalPath = input.trim();
-    }
-
-    // Continue with the chosen path
-    await installUI(finalPath);
 }
