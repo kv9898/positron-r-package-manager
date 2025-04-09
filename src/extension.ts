@@ -19,8 +19,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarProvider = new SidebarProvider();
 
 	// Refresh the package list upon new R runtime or switched R foreground session
-	const registerRuntimeEvent = getRegisterRuntimeEvent(sidebarProvider);
-	const changeForegroundEvent = getChangeForegroundEvent(sidebarProvider);
+	const registerRuntimeEvent = getRegisterRuntimeEvent();
+	const changeForegroundEvent = getChangeForegroundEvent();
 	context.subscriptions.push(registerRuntimeEvent, changeForegroundEvent);
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
