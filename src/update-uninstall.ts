@@ -114,25 +114,28 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     const rTmpPath = tmpPath.replace(/\\/g, '/');
 
     const rCode = `
-    jsonlite::write_json(
-      {
-        df <- do.call(rbind, lapply(.libPaths(), function(lib) {
-          pkgs <- tryCatch(old.packages(lib.loc = lib), error = function(e) NULL)
-          if (is.null(pkgs) || nrow(pkgs) == 0) return(NULL)
+    (function() {
+      jsonlite::write_json(
+        {
+          result <- do.call(rbind, lapply(.libPaths(), function(lib) {
+            pkgs <- tryCatch(old.packages(lib.loc = lib), error = function(e) NULL)
+            if (is.null(pkgs) || nrow(pkgs) == 0) return(NULL)
     
-          data.frame(
-            Package = rownames(pkgs),
-            LibPath = lib,
-            Installed = pkgs[, "Installed"],
-            ReposVer = pkgs[, "ReposVer"],
-            stringsAsFactors = FALSE
-          )
-        }))
-        if (is.null(df)) list() else df[order(df$Package, df$LibPath), ]
-      },
-      path = "${rTmpPath}",
-      auto_unbox = TRUE
-    )
+            data.frame(
+              Package = rownames(pkgs),
+              LibPath = lib,
+              Installed = pkgs[, "Installed"],
+              ReposVer = pkgs[, "ReposVer"],
+              stringsAsFactors = FALSE
+            )
+          }))
+    
+          if (is.null(result)) list() else result[order(result$Package, result$LibPath), ]
+        },
+        path = "${rTmpPath}",
+        auto_unbox = TRUE
+      )
+    })()
     `.trim();
 
     const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider));
