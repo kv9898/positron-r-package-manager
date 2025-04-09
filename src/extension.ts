@@ -4,7 +4,8 @@ import * as vscode from 'vscode';
 import * as positron from 'positron';
 import { refreshPackages } from './refresh';
 import { SidebarProvider, RPackageItem } from './sidebar';
-import { installPackages, uninstallPackage, updatePackages } from './install';
+import { installPackages} from './install';
+import { uninstallPackage, updatePackages } from './update-uninstall';
 import { getChangeForegroundEvent, getRegisterRuntimeEvent } from './events';
 
 // This method is called when your extension is activated
