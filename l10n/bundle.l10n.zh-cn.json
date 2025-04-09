@@ -4,7 +4,6 @@
   "No R package information available yet.": "暂无 R 包信息。",
   "Try to refresh after R starts or clear search.": "请在R启动之后尝试刷新或清空搜索。",
   "Open Package Help": "打开包帮助界面",
-  "[Positron] Failed to delete temp file:": "[Positron] 删除临时文件失败:",
   "Failed to read or parse R output: ": "无法读取或解析 R 输出: ",
   "Install R Packages": "安装 R 包",
   "Packages (separate multiple with space or comma)": "包名(多个用空格或逗号分隔)",
