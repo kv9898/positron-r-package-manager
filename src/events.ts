@@ -14,7 +14,6 @@ import { refreshPackages } from './refresh';
 export function getRegisterRuntimeEvent(): vscode.Disposable {
     const RegisterRuntimeEvent = positron.runtime.onDidRegisterRuntime((event) => {
         if (event.languageId !== 'r') { return; };
-        // refreshPackages(sidebarProvider);
         vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     });
     return RegisterRuntimeEvent;
@@ -32,7 +31,6 @@ export function getChangeForegroundEvent(): vscode.Disposable {
     const ChangeForegroundEvent = positron.runtime.onDidChangeForegroundSession((event) => {
         // Only refresh if the new session is an R session
         if (!event?.startsWith('r-')) { return; };
-        // refreshPackages(sidebarProvider);
         vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     });
 
