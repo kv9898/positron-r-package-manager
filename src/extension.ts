@@ -72,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// install packages
 		vscode.commands.registerCommand('positron-r-package-manager.installPackages', () => {
-			installPackages(sidebarProvider);
+			installPackages();
 		}),
 		// uninstall packages
 		vscode.commands.registerCommand('positron-r-package-manager.uninstallPackage', (item: RPackageItem | undefined) => {

@@ -19,7 +19,7 @@ import { getFilterRedundant, getObserver, _installpackages } from './utils';
  *
  * @param sidebarProvider The {@link SidebarProvider} instance to refresh after installation.
  */
-export async function installPackages(sidebarProvider: SidebarProvider): Promise<void> {
+export async function installPackages(): Promise<void> {
     // get lib paths
     const paths = await getLibPaths();
 
