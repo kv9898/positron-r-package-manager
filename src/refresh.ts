@@ -33,42 +33,45 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
     // R code to write installed + loaded package info to JSON
 
     const rCode = `
+    (function() {
       jsonlite::write_json(
         {
-          df <- do.call(rbind, lapply(.libPaths(), function(lib) {
+          do.call(rbind, lapply(.libPaths(), function(lib) {
             if (!dir.exists(lib)) return(NULL)
-      
+    
             pkgs <- installed.packages(lib.loc = lib)[, c("Package", "Version"), drop = FALSE]
-            if (nrow(pkgs) == 0) return(NULL)  # Skip empty libraries
-      
+            if (nrow(pkgs) == 0) return(NULL)
+    
             titles <- vapply(pkgs[, "Package"], function(pkg) {
               tryCatch(packageDescription(pkg, fields = "Title"), error = function(e) NA_character_)
             }, character(1))
-      
-            # Safely get loaded package paths
-            loaded_pkgs <- loadedNamespaces()
-            loaded_paths <- vapply(loaded_pkgs, function(pkg) {
+    
+            loaded_paths <- vapply(loadedNamespaces(), function(pkg) {
               tryCatch(dirname(getNamespaceInfo(pkg, "path")), error = function(e) NA_character_)
             }, character(1), USE.NAMES = TRUE)
-      
-            data.frame(
+    
+            df <- data.frame(
               Package = pkgs[, "Package"],
               Version = pkgs[, "Version"],
               LibPath = lib,
-              LocationType = if (normalizePath(lib, winslash = "/", mustWork = FALSE) %in% 
-                                  normalizePath(.Library, winslash = "/", mustWork = FALSE)) "System" else "User",
+              LocationType = if (normalizePath(lib, winslash = "/", mustWork = FALSE) %in%
+                                   normalizePath(.Library, winslash = "/", mustWork = FALSE)) "System" else "User",
               Title = titles,
               Loaded = pkgs[, "Package"] %in% names(loaded_paths) & loaded_paths[pkgs[, "Package"]] == lib,
               stringsAsFactors = FALSE
             )
-          }))
-      
-          df[order(df$Package, df$LibPath), ]
+    
+            df
+          })) -> result
+    
+          if (is.null(result)) list() else result[order(result$Package, result$LibPath), ]
         },
         path = "${rTmpPath}",
         auto_unbox = TRUE
       )
-      `.trim();
+    })()
+    `.trim();
+
 
     const observer = getObserver("Error refreshing packages: {0}", sidebarProvider);
 

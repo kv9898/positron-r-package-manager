@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.0.7
+
+- Made all R-side operations stealth-safe to prevent polluting the global environment
+
 ## 0.0.6
 
 - Added prompt to install the `jsonlite` package
