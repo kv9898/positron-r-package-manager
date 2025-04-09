@@ -87,7 +87,7 @@ export function getObserver(
 export function _installpackages(packages: string, sidebarProvider: SidebarProvider) {
         const rCode = `install.packages(c(${packages}))`;
     
-        const observer= getObserver("Error while installing {0}: {1}", sidebarProvider, [packages], () => refreshPackages(sidebarProvider));
+        const observer= getObserver("Error while installing {0}: {1}", sidebarProvider, [packages]);
         positron.runtime.executeCode(
             'r',
             rCode,
