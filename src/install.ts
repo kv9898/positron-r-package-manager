@@ -86,13 +86,14 @@ async function installUI(path: string): Promise<void> {
             await installFromCran(path);
             break;
         case 'github':
+            await installFromGithub(path);
             break;
         case 'local':
             break;
     }
 }
 
-async function installFromCran(path: string): Promise<void> {
+async function installFromCran(libPath: string): Promise<void> {
     const input = await vscode.window.showInputBox({
         title: vscode.l10n.t('Install R Packages'),
         prompt: vscode.l10n.t('Packages (separate multiple with space or comma)'),
@@ -110,6 +111,70 @@ async function installFromCran(path: string): Promise<void> {
         .map(pkg => `"${pkg}"`)
         .join(', ');
 
-    _installpackages(packages, path);
+    _installpackages(packages, libPath);
 }
 
+async function installFromGithub(libPath: string): Promise<void>{
+    const repo = await vscode.window.showInputBox({
+    title: vscode.l10n.t(vscode.l10n.t('Install from GitHub')),
+    prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2)'),
+    ignoreFocusOut: true
+  });
+
+  if (!repo?.trim()) {return;};
+
+  const rCode = libPath
+    ? `withr::with_libpaths("${libPath.replace(/\\/g, '/')}", devtools::install_github("${repo}"))`
+    : `devtools::install_github("${repo}")`;
+
+  await positron.runtime.executeCode(
+    'r',
+    rCode,
+    true,
+    undefined,
+    positron.RuntimeCodeExecutionMode.Interactive
+  );
+  vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+  return;
+}
+
+// async function installFromLocal(libPath: string): Promise<void>{
+//     const result = await vscode.window.showOpenDialog({
+//         filters: { 'R Packages': ['tar.gz', 'zip'] },
+//         canSelectMany: false,
+//         openLabel: vscode.l10n.t('Install package')
+//       });
+
+//       if (!result || !result[0]) return;
+
+//       const path = result[0].fsPath.replace(/\\/g, '/');
+
+//       const rCode = libPath
+//         ? `install.packages("${path}", repos = NULL, type = "source", lib = "${libPath}")`
+//         : `install.packages("${path}", repos = NULL, type = "source")`;
+
+//       await positron.runtime.executeCode(
+//         'r',
+//         rCode,
+//         true,
+//         undefined,
+//         positron.RuntimeCodeExecutionMode.Interactive
+//       );
+//       refreshPackages(sidebarProvider);
+//       break;
+// }
+
+// async function changeLibPath(): Promise<void> {
+//     const input = await vscode.window.showInputBox({
+//         title: vscode.l10n.t('Set Library Directory'),
+//         prompt: vscode.l10n.t('Enter the library path to install to'),
+//         placeHolder: vscode.l10n.t('e.g. C:/Users/YourName/Documents/R/win-library/4.3'),
+//         ignoreFocusOut: true
+//       });
+
+//       if (input?.trim()) {
+//         await installPackages(sidebarProvider, input.trim());
+//       }
+//       break;
+//     }
+// }

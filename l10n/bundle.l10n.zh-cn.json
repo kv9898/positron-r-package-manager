@@ -36,5 +36,7 @@
   "Install from local archive (.tar.gz or .zip)": "从本地文件安装 (.tar.gz 或 .zip)",
   "Install to another directory (current: {0})": "安装到另一个目录 (当前: {0})",
   "Select installation method": "选择安装方式",
-  "Where would you like to install packages from?": "请选择安装包的来源"
+  "Where would you like to install packages from?": "请选择安装包的来源",
+  "Enter GitHub repo (e.g., tidyverse/ggplot2)": "请输入 GitHub 仓库名称 (例如 tidyverse/ggplot2)"
+
 }
