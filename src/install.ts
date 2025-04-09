@@ -89,6 +89,7 @@ async function installUI(path: string): Promise<void> {
             await installFromGithub(path);
             break;
         case 'local':
+            await installFromLocal(path);
             break;
         case 'customLib':
             await changeLibPath();
@@ -141,31 +142,31 @@ async function installFromGithub(libPath: string): Promise<void> {
     return;
 }
 
-// async function installFromLocal(libPath: string): Promise<void>{
-//     const result = await vscode.window.showOpenDialog({
-//         filters: { 'R Packages': ['tar.gz', 'zip'] },
-//         canSelectMany: false,
-//         openLabel: vscode.l10n.t('Install package')
-//       });
+async function installFromLocal(libPath: string): Promise<void>{
+    const result = await vscode.window.showOpenDialog({
+        filters: { 'R Packages': ['tar.gz', 'zip'] },
+        canSelectMany: false,
+        openLabel: vscode.l10n.t('Install package')
+      });
 
-//       if (!result || !result[0]) return;
+      if (!result || !result[0]) {return;};
+;
+      const path = result[0].fsPath.replace(/\\/g, '/');
 
-//       const path = result[0].fsPath.replace(/\\/g, '/');
+      const rCode = libPath
+        ? `install.packages("${path}", repos = NULL, type = "source", lib = "${libPath}")`
+        : `install.packages("${path}", repos = NULL, type = "source")`;
 
-//       const rCode = libPath
-//         ? `install.packages("${path}", repos = NULL, type = "source", lib = "${libPath}")`
-//         : `install.packages("${path}", repos = NULL, type = "source")`;
-
-//       await positron.runtime.executeCode(
-//         'r',
-//         rCode,
-//         true,
-//         undefined,
-//         positron.RuntimeCodeExecutionMode.Interactive
-//       );
-//       refreshPackages(sidebarProvider);
-//       break;
-// }
+      await positron.runtime.executeCode(
+        'r',
+        rCode,
+        true,
+        undefined,
+        positron.RuntimeCodeExecutionMode.Interactive
+      );
+      vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+      return;
+}
 
 export async function changeLibPath(): Promise<void> {
     const existingPaths = await getLibPaths();
