@@ -59,9 +59,6 @@ export function getObserver(
             ).then(selection => {
                 if (selection === vscode.l10n.t("Install")) {
                     _installpackages('"jsonlite"', sidebarProvider);
-                    if (onAfterError) {
-                        onAfterError();
-                    }
                 }
             });
         } else if (onAfterError) {
