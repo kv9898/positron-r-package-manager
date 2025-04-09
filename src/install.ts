@@ -69,18 +69,18 @@ async function installUI(path: string): Promise<void> {
         { label: vscode.l10n.t('Install from GitHub'), value: 'github' },
         { label: vscode.l10n.t('Install from local archive (.tar.gz or .zip)'), value: 'local' },
         {
-          label: vscode.l10n.t("Install to another directory (current: {0})", path),
-          value: 'customLib'
+            label: vscode.l10n.t("Install to another directory (current: {0})", path),
+            value: 'customLib'
         }
-      ];
-    
+    ];
+
     const selection = await vscode.window.showQuickPick(options, {
         title: vscode.l10n.t('Select installation method'),
         placeHolder: vscode.l10n.t('Where would you like to install packages from?'),
         ignoreFocusOut: true
-      });
+    });
 
-      
+
     switch (selection?.value) {
         case 'cran':
             await installFromCran(path);
@@ -89,6 +89,9 @@ async function installUI(path: string): Promise<void> {
             await installFromGithub(path);
             break;
         case 'local':
+            break;
+        case 'customLib':
+            await changeLibPath();
             break;
     }
 }
@@ -114,28 +117,28 @@ async function installFromCran(libPath: string): Promise<void> {
     _installpackages(packages, libPath);
 }
 
-async function installFromGithub(libPath: string): Promise<void>{
+async function installFromGithub(libPath: string): Promise<void> {
     const repo = await vscode.window.showInputBox({
-    title: vscode.l10n.t(vscode.l10n.t('Install from GitHub')),
-    prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2)'),
-    ignoreFocusOut: true
-  });
+        title: vscode.l10n.t(vscode.l10n.t('Install from GitHub')),
+        prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2)'),
+        ignoreFocusOut: true
+    });
 
-  if (!repo?.trim()) {return;};
+    if (!repo?.trim()) { return; };
 
-  const rCode = libPath
-    ? `withr::with_libpaths("${libPath.replace(/\\/g, '/')}", devtools::install_github("${repo}"))`
-    : `devtools::install_github("${repo}")`;
+    const rCode = libPath
+        ? `withr::with_libpaths("${libPath.replace(/\\/g, '/')}", devtools::install_github("${repo}"))`
+        : `devtools::install_github("${repo}")`;
 
-  await positron.runtime.executeCode(
-    'r',
-    rCode,
-    true,
-    undefined,
-    positron.RuntimeCodeExecutionMode.Interactive
-  );
-  vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
-  return;
+    await positron.runtime.executeCode(
+        'r',
+        rCode,
+        true,
+        undefined,
+        positron.RuntimeCodeExecutionMode.Interactive
+    );
+    vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+    return;
 }
 
 // async function installFromLocal(libPath: string): Promise<void>{
@@ -164,17 +167,37 @@ async function installFromGithub(libPath: string): Promise<void>{
 //       break;
 // }
 
-// async function changeLibPath(): Promise<void> {
-//     const input = await vscode.window.showInputBox({
-//         title: vscode.l10n.t('Set Library Directory'),
-//         prompt: vscode.l10n.t('Enter the library path to install to'),
-//         placeHolder: vscode.l10n.t('e.g. C:/Users/YourName/Documents/R/win-library/4.3'),
-//         ignoreFocusOut: true
-//       });
+export async function changeLibPath(): Promise<void> {
+    const existingPaths = await getLibPaths();
 
-//       if (input?.trim()) {
-//         await installPackages(sidebarProvider, input.trim());
-//       }
-//       break;
-//     }
-// }
+    const options = [
+        ...existingPaths.map(p => ({ label: p, description: 'Existing library path' })),
+        { label: '📁 Enter a new library path...', description: 'Custom path' }
+    ];
+
+    const selection = await vscode.window.showQuickPick(options, {
+        title: vscode.l10n.t('Select Library Path'),
+        placeHolder: vscode.l10n.t('Choose from existing library paths or enter a new one'),
+        ignoreFocusOut: true
+    });
+
+    if (!selection) {return;};
+
+    let finalPath = selection.label;
+
+    // Handle custom entry
+    if (selection.label.includes('Enter a new')) {
+        const input = await vscode.window.showInputBox({
+            title: vscode.l10n.t('Enter Custom Library Path'),
+            prompt: vscode.l10n.t('Type a path to use as a library directory'),
+            placeHolder: vscode.l10n.t('e.g. C:/Users/YourName/Documents/R/win-library/4.3'),
+            ignoreFocusOut: true
+        });
+
+        if (!input?.trim()) {return;};
+        finalPath = input.trim();
+    }
+
+    // Continue with the chosen path
+    await installUI(finalPath);
+}
