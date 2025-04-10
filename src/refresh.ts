@@ -30,7 +30,7 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
     throw new Error(vscode.l10n.t("No R runtime available."));
   }
 
-  // vscode.window.showInformationMessage("Proper refresh starts"); // For Debuggging
+  // vscode.window.showInformationMessage("Proper refresh starts"); // For Debugging
   
   // Execute R code to dump package information
   const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`);
