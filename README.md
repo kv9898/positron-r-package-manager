@@ -10,7 +10,8 @@ Manage your R extensions from within [Positron](https://positron.posit.co/) — 
 
 - ✅ View all **installed R packages** in a tidy sidebar
 - ✅ Check which packages are **loaded** (like RStudio's "Packages" tab)
-- ✅ **Install** one or multiple packages (space/comma-separated)
+- ✅ **Install** one or multiple packages from CRAN (space/comma-separated)
+- ✅ **Install** individual packages from GitHub or a local archive
 - ✅ **Update** outdated packages with version preview and multi-select
 - ✅ **Uninstall** packages with a single click
 - ✅ 🔍 **Search** by name or title (fuzzy search supported)
@@ -58,7 +59,7 @@ You can access these from the sidebar or Command Palette:
 
 | Command | Description |
 |--------|-------------|
-| `R: Install Packages` | Install one or more packages by name |
+| `R: Install Packages` | Install one or more packages |
 | `R: Update Installed Packages` | Update selected outdated packages |
 | `R: Uninstall Package` | Uninstall a selected package |
 | `R: Refresh package information` | Reload the package list from the current R session |
@@ -69,7 +70,6 @@ You can access these from the sidebar or Command Palette:
 ## ⚠️ Known Issues
 
 - Packages installed or detached manually via console are not immediately reflected — use **Refresh** to sync.
-- The extension currently uses `install.packages()` which installs to the default library path.
 
 ---
 
