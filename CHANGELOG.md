@@ -5,6 +5,8 @@ All notable changes to the "positron-r-package-manager" extension will be docume
 ## 0.0.7
 
 - Made all R-side operations stealth-safe to prevent polluting the global environment
+- Added support for installing packages from GitHub and local archives
+- Added option to install packages to a custom library path
 
 ## 0.0.6
 
