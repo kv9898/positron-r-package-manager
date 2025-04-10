@@ -2,6 +2,11 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.0.8
+
+- Fixed ENOENT errors errors during Positron load
+- Improved refresh logic for a more robust and streamlined experience
+
 ## 0.0.7
 
 - Made all R-side operations stealth-safe to prevent polluting the global environment
