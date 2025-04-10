@@ -44,5 +44,6 @@
   "📁 Browse for a new library path...": "📁 浏览新的库路径...",
   "Select a custom directory": "选择一个自定义目录",
   "Use as Library Path": "使用作为库路径",
-  "Failed to create directory: {0}": "无法创建目录: {0}"
+  "Failed to create directory: {0}": "无法创建目录: {0}",
+  "Install package": "安装包"
 }
