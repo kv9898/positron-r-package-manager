@@ -5,6 +5,7 @@ All notable changes to the "positron-r-package-manager" extension will be docume
 ## 0.0.9
 
 - Added an optional R logo next to package names to enhance visual clarity
+- Improved documentation on how to locate and use the R Package Manager sidebar
 
 ## 0.0.8
 

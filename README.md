@@ -6,6 +6,28 @@ Manage your R extensions from within [Positron](https://positron.posit.co/) — 
 
 ---
 
+# 📚 How to Find the Sidebar
+
+Once the extension is installed and activated, you can find the R Package Manager sidebar by looking for the 📖 icon of an opened book in the primary sidebar on the left side of the VS Code window.
+
+This icon represents the R packages view provided by this extension.
+
+## 🧭 Recommended: Move it to the Right (Just like RStudio)
+
+To better match the layout you're familiar with in RStudio, you can _drag_ the entire R Package Manager sidebar to the secondary sidebar on the right.
+
+Alternatively,
+
+1. Right-click the opened book icon (📖) or the sidebar tab.
+
+2. Choose "Move to" then "Secondary Side bar" from the context menu.
+
+3. The sidebar will now appear on the right, just like the RStudio "Packages" pane.
+
+You can always move it back or rearrange it as you prefer.
+
+---
+
 ## 🚀 Features
 
 - ✅ View all **installed R packages** in a tidy sidebar
@@ -35,7 +57,7 @@ This extension currently supports the following languages:
 - 🇺🇸 **English**
 - 🇨🇳 **简体中文 (Simplified Chinese)**
 
-The UI will automatically display in your Positron language setting.  
+The UI will automatically display in your Positron language setting.
 
 If you'd like to contribute translations or suggest improvements, feel free to open an issue or pull request!
 
@@ -46,11 +68,11 @@ If you'd like to contribute translations or suggest improvements, feel free to o
 This extension provides the following setting:
 
 - `positron-r-package-manager.filterOutdatedIfUpToDateElsewhere`  
-  *(boolean, default: `true`)*  
+  _(boolean, default: `true`)_  
   When enabled, filters out outdated R packages if an up-to-date version exists in another library during updates. This helps ruling out package installations that are not updatable in their current locations.
 
 - `positron-r-package-manager.showRIcon`
-  *(boolean, default: false)*
+  _(boolean, default: false)_
   When enabled, displays a small R logo next to each package in the sidebar to visually indicate package entries.
 
 You can configure this setting in your VS Code settings (`settings.json`) or through the Settings UI.
@@ -61,13 +83,13 @@ You can configure this setting in your VS Code settings (`settings.json`) or thr
 
 You can access these from the sidebar or Command Palette:
 
-| Command | Description |
-|--------|-------------|
-| `R: Install Packages` | Install one or more packages |
-| `R: Update Installed Packages` | Update selected outdated packages |
-| `R: Uninstall Package` | Uninstall a selected package |
-| `R: Refresh package information` | Reload the package list from the current R session |
-| `R: Search for installed packages` | Filter package list by name/title |
+| Command                            | Description                                        |
+| ---------------------------------- | -------------------------------------------------- |
+| `R: Install Packages`              | Install one or more packages                       |
+| `R: Update Installed Packages`     | Update selected outdated packages                  |
+| `R: Uninstall Package`             | Uninstall a selected package                       |
+| `R: Refresh package information`   | Reload the package list from the current R session |
+| `R: Search for installed packages` | Filter package list by name/title                  |
 
 ---
 
