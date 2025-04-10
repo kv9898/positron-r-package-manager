@@ -27,11 +27,18 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "positron-r-package-manager" sees its sidebar refreshed!');
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('positron-r-package-manager.refreshPackages', () => {
-			refreshPackages(sidebarProvider);
-		})
-	);
+	vscode.commands.registerCommand('positron-r-package-manager.refreshPackages', async () => {
+		const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
+
+		if (!hasR) {
+			vscode.window.showWarningMessage(
+				vscode.l10n.t('No R runtime available. Please start an R session.')
+			);
+			return;
+		}
+
+		await refreshPackages(sidebarProvider);
+	});
 
 	// handle sidebar
 	const treeView = vscode.window.createTreeView('rPackageView', {
@@ -44,9 +51,12 @@ export function activate(context: vscode.ExtensionContext) {
 			sidebarProvider.handleCheckboxChange(item, newState);
 		}
 	});
-	treeView.onDidChangeVisibility((event) => {
+	treeView.onDidChangeVisibility(async (event) => {
 		if (event.visible) {
-			refreshPackages(sidebarProvider); // ✅ Refresh package data when the view becomes visible
+			const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
+			if (hasR) {
+				refreshPackages(sidebarProvider);
+			}
 		}
 	});
 

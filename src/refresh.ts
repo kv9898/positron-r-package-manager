@@ -24,6 +24,15 @@ import { getObserver, waitForFile } from './utils';
  */
 
 export async function refreshPackages(sidebarProvider: SidebarProvider): Promise<void> {
+  // Check if an R runtime is registered, only proceed if it is
+  const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
+  if (!hasR) {
+    throw new Error(vscode.l10n.t("No R runtime available."));
+  }
+
+  // vscode.window.showInformationMessage("Proper refresh starts"); // For Debuggging
+  
+  // Execute R code to dump package information
   const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`);
   const rTmpPath = tmpPath.replace(/\\/g, '/');
 
