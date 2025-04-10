@@ -49,7 +49,6 @@ export function getObserver(
 
     function errorHandling(error: string) {
         const fullArgs = [...templateArguments, error];
-        vscode.window.showErrorMessage(vscode.l10n.t(template, ...fullArgs));
         // Check for jsonlite-specific error
         if (/jsonlite/i.test(error)) {
             vscode.window.showWarningMessage(
@@ -69,8 +68,28 @@ export function getObserver(
                     _installpackages('"devtools"');
                 }
             });
-        } else if (onAfterError) {
-            onAfterError();
+        } else if (/readRDS/i.test(error)) {
+            const restartLabel = vscode.l10n.t("Restart R");
+
+            vscode.window.showWarningMessage(
+                vscode.l10n.t("A readRDS() error was encountered. Please restart R to continue."),
+                restartLabel
+            ).then(selection => {
+                if (selection === restartLabel) {
+                    positron.runtime.getForegroundSession().then((session) => {
+                        if (session?.metadata.sessionId.startsWith('r-')) {
+                            positron.runtime.restartSession(session?.metadata.sessionId);
+                        } else {
+                            vscode.window.showWarningMessage(
+                                vscode.l10n.t("No active R session found in the foreground. Please restart R manually.")
+                            );
+                        }
+                    });
+                }
+            });
+        } else {
+            vscode.window.showErrorMessage(vscode.l10n.t(template, ...fullArgs));
+            if (onAfterError) { onAfterError(); }
         }
     }
 

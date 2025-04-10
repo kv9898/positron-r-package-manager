@@ -118,7 +118,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
       jsonlite::write_json(
         {
           result <- do.call(rbind, lapply(.libPaths(), function(lib) {
-            pkgs <- tryCatch(old.packages(lib.loc = lib), error = function(e) NULL)
+            pkgs <- old.packages(lib.loc = lib)
             if (is.null(pkgs) || nrow(pkgs) == 0) return(NULL)
     
             data.frame(
