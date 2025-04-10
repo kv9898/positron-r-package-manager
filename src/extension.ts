@@ -4,9 +4,9 @@ import * as vscode from 'vscode';
 import * as positron from 'positron';
 import { refreshPackages } from './refresh';
 import { SidebarProvider, RPackageItem } from './sidebar';
-import { installPackages} from './install';
+import { installPackages } from './install';
 import { uninstallPackage, updatePackages } from './update-uninstall';
-import { getChangeForegroundEvent, getRegisterRuntimeEvent } from './events';
+import { getChangeForegroundEvent } from './events';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -19,9 +19,9 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarProvider = new SidebarProvider();
 
 	// Refresh the package list upon new R runtime or switched R foreground session
-	const registerRuntimeEvent = getRegisterRuntimeEvent();
+	// const registerRuntimeEvent = getRegisterRuntimeEvent();
 	const changeForegroundEvent = getChangeForegroundEvent();
-	context.subscriptions.push(registerRuntimeEvent, changeForegroundEvent);
+	context.subscriptions.push(changeForegroundEvent);
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated

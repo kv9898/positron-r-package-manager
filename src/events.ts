@@ -8,13 +8,13 @@ import * as positron from 'positron';
  * @param sidebarProvider The SidebarProvider instance to refresh
  * @returns A disposable that can be used to unregister the event
  */
-export function getRegisterRuntimeEvent(): vscode.Disposable {
-    const RegisterRuntimeEvent = positron.runtime.onDidRegisterRuntime((event) => {
-        if (event.languageId !== 'r') { return; };
-        vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
-    });
-    return RegisterRuntimeEvent;
-}
+// export function getRegisterRuntimeEvent(): vscode.Disposable {
+//     const RegisterRuntimeEvent = positron.runtime.onDidRegisterRuntime((event) => {
+//         if (event.languageId !== 'r') { return; };
+//         vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+//     });
+//     return RegisterRuntimeEvent;
+// }
 
 /**
  * Returns a disposable that listens for the onDidChangeForegroundSession event.
