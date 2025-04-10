@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { SidebarProvider, RPackageInfo } from './sidebar';
-import { getObserver } from './utils';
+import { getObserver, waitForFile } from './utils';
 
 
 /**
@@ -23,33 +23,37 @@ import { getObserver } from './utils';
  *          or rejects if there is an error in executing the R code or parsing its output.
  */
 
-export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // The code you place here will be executed every time your command is executed
-    // Load Tidyverse package
-    const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`);
-    const rTmpPath = tmpPath.replace(/\\/g, '/');
+export async function refreshPackages(sidebarProvider: SidebarProvider): Promise<void> {
+  // Check if an R runtime is registered, only proceed if it is
+  const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
+  if (!hasR) {
+    throw new Error(vscode.l10n.t("No R runtime available."));
+  }
 
-    // R code to write installed + loaded package info to JSON
+  // vscode.window.showInformationMessage("Proper refresh starts"); // For Debuggging
+  
+  // Execute R code to dump package information
+  const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`);
+  const rTmpPath = tmpPath.replace(/\\/g, '/');
 
-    const rCode = `
+  const rCode = `
     (function() {
       jsonlite::write_json(
         {
           do.call(rbind, lapply(.libPaths(), function(lib) {
             if (!dir.exists(lib)) return(NULL)
-    
+
             pkgs <- installed.packages(lib.loc = lib)[, c("Package", "Version"), drop = FALSE]
             if (nrow(pkgs) == 0) return(NULL)
-    
+
             titles <- vapply(pkgs[, "Package"], function(pkg) {
               tryCatch(packageDescription(pkg, fields = "Title"), error = function(e) NA_character_)
             }, character(1))
-    
+
             loaded_paths <- vapply(loadedNamespaces(), function(pkg) {
               tryCatch(dirname(getNamespaceInfo(pkg, "path")), error = function(e) NA_character_)
             }, character(1), USE.NAMES = TRUE)
-    
+
             df <- data.frame(
               Package = pkgs[, "Package"],
               Version = pkgs[, "Version"],
@@ -60,56 +64,63 @@ export function refreshPackages(sidebarProvider: SidebarProvider): Promise<void>
               Loaded = pkgs[, "Package"] %in% names(loaded_paths) & loaded_paths[pkgs[, "Package"]] == lib,
               stringsAsFactors = FALSE
             )
-    
+
             df
           })) -> result
-    
+
           if (is.null(result)) list() else result[order(result$Package, result$LibPath), ]
         },
         path = "${rTmpPath}",
         auto_unbox = TRUE
       )
     })()
-    `.trim();
+  `.trim();
 
+  const observer = getObserver("Error refreshing packages: {0}");
 
-    const observer = getObserver("Error refreshing packages: {0}");
+  try {
+    await positron.runtime.executeCode(
+      'r',
+      rCode,
+      false,
+      undefined,
+      positron.RuntimeCodeExecutionMode.Silent,
+      undefined,
+      observer
+    );
 
-    positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer).then(() => {
-      try {
-        const contents = fs.readFileSync(tmpPath, 'utf-8');
-        const parsed: { Package: string; Version: string; LibPath: string; LocationType: string; Title: string; Loaded: boolean }[] = JSON.parse(contents);
+    await waitForFile(tmpPath);
 
-        // // Count loaded packages
-        // const loadedCount = parsed.filter(pkg => pkg.loaded).length;
-        // const totalCount = parsed.length;
+    const contents = fs.readFileSync(tmpPath, 'utf-8');
+    const parsed: {
+      Package: string;
+      Version: string;
+      LibPath: string;
+      LocationType: string;
+      Title: string;
+      Loaded: boolean;
+    }[] = JSON.parse(contents);
 
-        // // Show result
-        // vscode.window.showInformationMessage(`✔️ ${loadedCount} loaded out of ${totalCount} installed R packages.`);
+    try {
+      fs.unlinkSync(tmpPath);
+    } catch (unlinkErr) {
+      console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
+    }
 
-        // Optional: clean up
-        try {
-          fs.unlinkSync(tmpPath);
-        } catch (unlinkErr) {
-          console.warn(vscode.l10n.t('[Positron] Failed to delete temp file: '), unlinkErr);
-          // No user-facing message, just dev-side warning
-        }
+    const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
+      name: pkg.Package,
+      version: pkg.Version,
+      libpath: pkg.LibPath,
+      locationtype: pkg.LocationType,
+      title: pkg.Title,
+      loaded: pkg.Loaded
+    }));
 
-        const pkgInfo: RPackageInfo[] = parsed.map(pkg => ({
-          name: pkg.Package,
-          version: pkg.Version,
-          libpath: pkg.LibPath,
-          locationtype: pkg.LocationType,
-          title: pkg.Title,
-          loaded: pkg.Loaded
-        }));
-
-        sidebarProvider.refresh(pkgInfo);
-        resolve();
-      } catch (err) {
-        vscode.window.showErrorMessage(vscode.l10n.t('Failed to read or parse R output: ') + (err instanceof Error ? err.message : String(err)));
-        reject(err);
-      }
-    }, reject);
-  });
-};
+    sidebarProvider.refresh(pkgInfo);
+  } catch (err) {
+    vscode.window.showErrorMessage(
+      vscode.l10n.t('Failed to refresh R packages: {0}', err instanceof Error ? err.message : String(err))
+    );
+    throw err;
+  }
+}

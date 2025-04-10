@@ -4,9 +4,9 @@ import * as vscode from 'vscode';
 import * as positron from 'positron';
 import { refreshPackages } from './refresh';
 import { SidebarProvider, RPackageItem } from './sidebar';
-import { installPackages} from './install';
+import { installPackages } from './install';
 import { uninstallPackage, updatePackages } from './update-uninstall';
-import { getChangeForegroundEvent, getRegisterRuntimeEvent } from './events';
+import { getChangeForegroundEvent } from './events';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -19,19 +19,26 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarProvider = new SidebarProvider();
 
 	// Refresh the package list upon new R runtime or switched R foreground session
-	const registerRuntimeEvent = getRegisterRuntimeEvent();
+	// const registerRuntimeEvent = getRegisterRuntimeEvent();
 	const changeForegroundEvent = getChangeForegroundEvent();
-	context.subscriptions.push(registerRuntimeEvent, changeForegroundEvent);
+	context.subscriptions.push(changeForegroundEvent);
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "positron-r-package-manager" sees its sidebar refreshed!');
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('positron-r-package-manager.refreshPackages', () => {
-			refreshPackages(sidebarProvider);
-		})
-	);
+	vscode.commands.registerCommand('positron-r-package-manager.refreshPackages', async () => {
+		const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
+
+		if (!hasR) {
+			vscode.window.showWarningMessage(
+				vscode.l10n.t('No R runtime available. Please start an R session.')
+			);
+			return;
+		}
+
+		await refreshPackages(sidebarProvider);
+	});
 
 	// handle sidebar
 	const treeView = vscode.window.createTreeView('rPackageView', {
@@ -44,9 +51,12 @@ export function activate(context: vscode.ExtensionContext) {
 			sidebarProvider.handleCheckboxChange(item, newState);
 		}
 	});
-	treeView.onDidChangeVisibility((event) => {
+	treeView.onDidChangeVisibility(async (event) => {
 		if (event.visible) {
-			refreshPackages(sidebarProvider); // ✅ Refresh package data when the view becomes visible
+			const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
+			if (hasR) {
+				refreshPackages(sidebarProvider);
+			}
 		}
 	});
 

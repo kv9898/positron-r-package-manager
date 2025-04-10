@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
+import * as fs from 'fs';
 
 /**
  * Remove ANSI escape codes from a string, so that only the plain text remains.
@@ -126,5 +127,31 @@ export function _installpackages(packages: string, path?: string) {
         observer
     ).then(() => {
         vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+    });
+}
+
+/**
+ * Waits for a file to appear in the file system, periodically checking for its
+ * existence until a timeout is reached or the file is found.
+ * @param filePath The path to the file to wait for.
+ * @param timeout The maximum time to wait for the file to appear, in milliseconds.
+ * @returns A promise that resolves when the file is found or rejects when the
+ * timeout is reached.
+ */
+export async function waitForFile(filePath: string, timeout = 1000): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+
+        const interval = setInterval(() => {
+            if (fs.existsSync(filePath)) {
+                clearInterval(interval);
+                resolve();
+            } else if (Date.now() - start > timeout) {
+                clearInterval(interval);
+                const error = new Error(vscode.l10n.t("Timeout waiting for file: {0}", filePath));
+                vscode.window.showErrorMessage(error.message);
+                reject(error);
+            }
+        }, 100);
     });
 }
