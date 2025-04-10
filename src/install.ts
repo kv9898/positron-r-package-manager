@@ -131,12 +131,16 @@ async function installFromGithub(libPath: string): Promise<void> {
         ? `withr::with_libpaths("${libPath.replace(/\\/g, '/')}", devtools::install_github("${repo}"))`
         : `devtools::install_github("${repo}")`;
 
+    const observer = getObserver("Error while installing from {0}: {1}", [repo]);
+
     await positron.runtime.executeCode(
         'r',
         rCode,
         true,
         undefined,
-        positron.RuntimeCodeExecutionMode.Interactive
+        positron.RuntimeCodeExecutionMode.Interactive,
+        undefined,
+        observer
     );
     vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     return;

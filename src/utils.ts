@@ -60,6 +60,15 @@ export function getObserver(
                     _installpackages('"jsonlite"');
                 }
             });
+        } else if (/devtools/i.test(error)) {
+            vscode.window.showWarningMessage(
+                vscode.l10n.t("The 'devtools' package appears to be missing. Would you like to install it?"),
+                vscode.l10n.t("Install")
+            ).then(selection => {
+                if (selection === vscode.l10n.t("Install")) {
+                    _installpackages('"devtools"');
+                }
+            });
         } else if (onAfterError) {
             onAfterError();
         }
@@ -86,23 +95,23 @@ export function getObserver(
 export function _installpackages(packages: string, path?: string) {
     // Normalize path for R if provided
     const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';
-  
+
     const rCode = `install.packages(c(${packages})${libOption})`;
-  
+
     const observer = getObserver("Error while installing {0}: {1}", [packages]);
-  
+
     positron.runtime.executeCode(
-      'r',
-      rCode,
-      true,
-      undefined,
-      positron.RuntimeCodeExecutionMode.Interactive,
-      undefined,
-      observer
+        'r',
+        rCode,
+        true,
+        undefined,
+        positron.RuntimeCodeExecutionMode.Interactive,
+        undefined,
+        observer
     ).then(() => {
-      vscode.window.showInformationMessage(
-        vscode.l10n.t('✅ Installed R package(s): {0}', packages)
-      );
-      vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+        vscode.window.showInformationMessage(
+            vscode.l10n.t('✅ Installed R package(s): {0}', packages)
+        );
+        vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     });
-  }
+}
