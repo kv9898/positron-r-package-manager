@@ -49,6 +49,10 @@ This extension provides the following setting:
   *(boolean, default: `true`)*  
   When enabled, filters out outdated R packages if an up-to-date version exists in another library during updates. This helps ruling out package installations that are not updatable in their current locations.
 
+- `positron-r-package-manager.showRIcon`
+  *(boolean, default: false)*
+  When enabled, displays a small R logo next to each package in the sidebar to visually indicate package entries.
+
 You can configure this setting in your VS Code settings (`settings.json`) or through the Settings UI.
 
 ---

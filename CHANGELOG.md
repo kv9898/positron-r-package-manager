@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.0.9
+
+- Added an optional R logo next to package names to enhance visual clarity
+
 ## 0.0.8
 
 - Fixed ENOENT errors errors during Positron load
