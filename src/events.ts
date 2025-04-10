@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
 
-import { SidebarProvider } from './sidebar';
-import { refreshPackages } from './refresh';
-
 /**
  * Returns a disposable that listens for the onDidRegisterRuntime event.
  * If the registered runtime is an R runtime, it will trigger a call to

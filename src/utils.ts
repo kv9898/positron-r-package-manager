@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
 
-import { SidebarProvider } from './sidebar';
-import { refreshPackages } from './refresh';
-
 /**
  * Remove ANSI escape codes from a string, so that only the plain text remains.
  * This is for making error messages more readable.

@@ -5,9 +5,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import { RPackageItem, SidebarProvider } from './sidebar';
-import { refreshPackages } from './refresh';
-import { getFilterRedundant, getObserver, _installpackages } from './utils';
+import { SidebarProvider } from './sidebar';
+import { getObserver, _installpackages } from './utils';
 
 /**
  * Install R packages from the command palette.
