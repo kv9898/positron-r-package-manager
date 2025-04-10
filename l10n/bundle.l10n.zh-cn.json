@@ -8,7 +8,6 @@
   "Install R Packages": "安装 R 包",
   "Packages (separate multiple with space or comma)": "包名(多个用空格或逗号分隔)",
   "e.g. ggplot2 dplyr tidyr": "例如 ggplot2 dplyr tidyr",
-  "✅ Installed R package(s): {0}": "✅ 已安装 R 包: {0}",
   "No R packages available to uninstall.": "没有可卸载的 R 包。",
   "Select a package to uninstall": "选择要卸载的包",
   "Please click a package to uninstall": "请点击要卸载的包",

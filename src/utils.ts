@@ -109,9 +109,6 @@ export function _installpackages(packages: string, path?: string) {
         undefined,
         observer
     ).then(() => {
-        vscode.window.showInformationMessage(
-            vscode.l10n.t('✅ Installed R package(s): {0}', packages)
-        );
         vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     });
 }
