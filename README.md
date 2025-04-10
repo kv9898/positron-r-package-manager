@@ -78,11 +78,11 @@ You can access these from the sidebar or Command Palette:
 Created by [kv9898](https://github.com/kv9898)  
 Licensed under the [MIT License](./LICENSE)
 
----
+<!-- ---
 
 ## 💡 Future Ideas
 
-- [ ] Install from GitHub or Bioconductor
+- [ ] sth -->
 
 ---
 
