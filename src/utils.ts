@@ -140,7 +140,9 @@ export async function waitForFile(filePath: string, timeout = 1000): Promise<voi
                 resolve();
             } else if (Date.now() - start > timeout) {
                 clearInterval(interval);
-                reject(new Error(vscode.l10n.t("Timeout waiting for file: {0}", filePath)));
+                const error = new Error(vscode.l10n.t("Timeout waiting for file: {0}", filePath));
+                vscode.window.showErrorMessage(error.message);
+                reject(error);
             }
         }, 100);
     });
