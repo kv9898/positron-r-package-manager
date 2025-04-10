@@ -42,6 +42,12 @@
           "scope": "machine-overridable",
           "default": true,
           "description": "%filterOutdatedIfUpToDateElsewhere%"
+        },
+        "positron-r-package-manager.showRIcon": {
+          "type": "boolean",
+          "scope": "application",
+          "default": false,
+          "description": "%showRIcon%"
         }
       }
     },

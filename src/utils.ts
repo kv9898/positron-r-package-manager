@@ -28,6 +28,11 @@ export function getFilterRedundant(): boolean {
     return config.get<boolean>('filterOutdatedIfUpToDateElsewhere', true);
 }
 
+export function getShowRIcon(): boolean {
+    const config = vscode.workspace.getConfiguration('positron-r-package-manager');
+    return config.get<boolean>('showRIcon', false);
+}
+
 /**
  * Returns an ExecutionObserver that shows an error message using the given template
  * string, formatted with the given template arguments. If the error is due to a

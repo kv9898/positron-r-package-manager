@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
+import * as path from 'path';
 import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
-import * as path from 'path'; 
+import { getShowRIcon } from './utils';
 
 export interface RPackageInfo {
     name: string;
@@ -138,14 +139,17 @@ export class RPackageItem extends vscode.TreeItem {
 
         this.contextValue = 'rPackage';
 
-        this.iconPath = {
-            light: vscode.Uri.file(
-                path.join(__dirname, '..', 'resources', 'r_logo.svg')
-            ),
-            dark: vscode.Uri.file(
-                path.join(__dirname, '..', 'resources', 'r_logo.svg')
-            ),
-        };
+        if (getShowRIcon()) {
+            this.iconPath = {
+                light: vscode.Uri.file(
+                    path.join(__dirname, '..', 'resources', 'r_logo.svg')
+                ),
+                dark: vscode.Uri.file(
+                    path.join(__dirname, '..', 'resources', 'r_logo.svg')
+                ),
+            };
+        }
+
 
         this.checkboxState = pkg.loaded
             ? vscode.TreeItemCheckboxState.Checked

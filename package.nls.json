@@ -8,5 +8,6 @@
     "update.packages": "R: Update Installed Packages",
     "refresh.packages": "R: Refresh package information",
     "search.packages": "R: Search for installed packages",
-    "packages": "Packages"
+    "packages": "Packages",
+    "showRIcon": "Show an R icon next to package names"
 }
