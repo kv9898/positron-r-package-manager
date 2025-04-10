@@ -37,6 +37,12 @@
   "Install to another directory (current: {0})": "安装到另一个目录 (当前: {0})",
   "Select installation method": "选择安装方式",
   "Where would you like to install packages from?": "请选择安装包的来源",
-  "Enter GitHub repo (e.g., tidyverse/ggplot2)": "请输入 GitHub 仓库名称 (例如 tidyverse/ggplot2)"
-
+  "Enter GitHub repo (e.g., tidyverse/ggplot2)": "请输入 GitHub 仓库名称 (例如 tidyverse/ggplot2)",
+  "Select Library Path": "选择库路径",
+  "Choose an existing path or type a new one": "选择已存在的路径或输入一个新路径",
+  "Existing library path": "已存在的库路径",
+  "📁 Browse for a new library path...": "📁 浏览新的库路径...",
+  "Select a custom directory": "选择一个自定义目录",
+  "Use as Library Path": "使用作为库路径",
+  "Failed to create directory: {0}": "无法创建目录: {0}"
 }

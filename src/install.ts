@@ -142,30 +142,30 @@ async function installFromGithub(libPath: string): Promise<void> {
     return;
 }
 
-async function installFromLocal(libPath: string): Promise<void>{
+async function installFromLocal(libPath: string): Promise<void> {
     const result = await vscode.window.showOpenDialog({
         filters: { 'R Packages': ['tar.gz', 'zip'] },
         canSelectMany: false,
         openLabel: vscode.l10n.t('Install package')
-      });
+    });
 
-      if (!result || !result[0]) {return;};
-;
-      const path = result[0].fsPath.replace(/\\/g, '/');
+    if (!result || !result[0]) { return; };
+    ;
+    const path = result[0].fsPath.replace(/\\/g, '/');
 
-      const rCode = libPath
+    const rCode = libPath
         ? `install.packages("${path}", repos = NULL, type = "source", lib = "${libPath}")`
         : `install.packages("${path}", repos = NULL, type = "source")`;
 
-      await positron.runtime.executeCode(
+    await positron.runtime.executeCode(
         'r',
         rCode,
         true,
         undefined,
         positron.RuntimeCodeExecutionMode.Interactive
-      );
-      vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
-      return;
+    );
+    vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+    return;
 }
 
 export async function changeLibPath(): Promise<void> {
@@ -176,12 +176,13 @@ export async function changeLibPath(): Promise<void> {
     qp.placeholder = vscode.l10n.t('Choose an existing path or type a new one');
     qp.ignoreFocusOut = true;
 
-    const baseItems: vscode.QuickPickItem[] = [
+    const baseItems: (vscode.QuickPickItem & { id?: string })[] = [
         ...existingPaths.map(p => ({
             label: p,
             description: vscode.l10n.t('Existing library path')
         })),
         {
+            id: 'browse',
             label: vscode.l10n.t('📁 Browse for a new library path...'),
             description: vscode.l10n.t('Select a custom directory')
         }
@@ -191,20 +192,21 @@ export async function changeLibPath(): Promise<void> {
     qp.show();
 
     qp.onDidAccept(async () => {
-        const input = qp.value.trim();
+        const input = qp.value.trim().replace(/\\/g, '/');
         let finalPath: string | undefined;
 
-        const selected = qp.selectedItems[0];
+        const selected = qp.selectedItems[0] as (vscode.QuickPickItem & { id?: string });
 
         // Case 1: Browse
-        if (selected?.label.includes('Browse')) {
+        if (selected?.id === 'browse') {
             const folder = await vscode.window.showOpenDialog({
                 canSelectFolders: true,
                 canSelectMany: false,
                 openLabel: vscode.l10n.t('Use as Library Path')
             });
+
             if (folder?.length) {
-                finalPath = folder[0].fsPath;
+                finalPath = folder[0].fsPath.replace(/\\/g, '/');
             }
         }
 
@@ -213,11 +215,10 @@ export async function changeLibPath(): Promise<void> {
             finalPath = selected.label;
         }
 
-        // Case 3: Typed path manually
+        // Case 3: Manually typed
         else if (input) {
-            // Check if directory exists or is creatable
             if (fs.existsSync(input)) {
-                finalPath = input;
+                finalPath = input.trim();
             } else {
                 try {
                     fs.mkdirSync(input, { recursive: true });
