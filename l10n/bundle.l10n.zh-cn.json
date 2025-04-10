@@ -49,5 +49,6 @@
   "Select a custom directory": "选择一个自定义目录",
   "Use as Library Path": "使用作为库路径",
   "Failed to create directory: {0}": "无法创建目录: {0}",
-  "Install package": "安装包"
+  "Install package": "安装包",
+  "Timeout waiting for file: {0}": "等待文件 {0} 超时"
 }

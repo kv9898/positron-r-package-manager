@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
+import * as fs from 'fs';
 
 /**
  * Remove ANSI escape codes from a string, so that only the plain text remains.
@@ -126,5 +127,21 @@ export function _installpackages(packages: string, path?: string) {
         observer
     ).then(() => {
         vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+    });
+}
+
+export async function waitForFile(filePath: string, timeout = 1000): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+
+        const interval = setInterval(() => {
+            if (fs.existsSync(filePath)) {
+                clearInterval(interval);
+                resolve();
+            } else if (Date.now() - start > timeout) {
+                clearInterval(interval);
+                reject(new Error(vscode.l10n.t("Timeout waiting for file: {0}", filePath)));
+            }
+        }, 100);
     });
 }
