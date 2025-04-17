@@ -141,13 +141,34 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider));
 
     // Run R code to dump updates
-    await positron.runtime.executeCode('r', rCode, false, undefined, positron.RuntimeCodeExecutionMode.Silent, undefined, observer);
+    let parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[] | null = [];
+	await vscode.window.withProgress(
+		{
+			location: vscode.ProgressLocation.Notification,
+			title: vscode.l10n.t('Checking for R package updates...'),
+			cancellable: false
+		},
+		async () => {
+			await positron.runtime.executeCode(
+				'r',
+				rCode,
+				false,
+				undefined,
+				positron.RuntimeCodeExecutionMode.Silent,
+				undefined,
+				observer
+			);
 
-    // Parse updates
-    let parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[] = [];
-    try {
-        parsed = parsePackageUpdateJson(tmpPath);
-    } catch (err) {
+            // Parse updates
+			try {
+				parsed = parsePackageUpdateJson(tmpPath);
+			} catch (err) {
+				parsed = null; // signal failure
+			}
+		}
+	);
+
+    if (!parsed) {
         vscode.window.showErrorMessage(vscode.l10n.t('Failed to retrieve updatable packages.'));
         return;
     }

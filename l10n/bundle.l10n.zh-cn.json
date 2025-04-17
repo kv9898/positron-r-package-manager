@@ -22,6 +22,7 @@
   "No packages selected for update.": "未选择要升级的包。",
   "✅ Updated {0} R package(s) in-place": "✅ 成功升级 {0} 个 R 包",
   "[Positron] Failed to delete temp file: ": "[Positron] 删除临时文件失败: ",
+  "Checking for R package updates...": "检查 R 包更新中...",
   "Failed to retrieve updatable packages.": "无法获取可升级的包信息。",
   "Select R packages to update": "选择要升级的包",
   "Choose package installs to update": "请选择要升级的包安装信息",
