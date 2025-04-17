@@ -2,7 +2,7 @@
   "name": "positron-r-package-manager",
   "displayName": "%display.name%",
   "description": "%description%",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "publisher": "kv9898",
   "repository": {
     "type": "git",

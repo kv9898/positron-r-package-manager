@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.1.0
+
+- Added progress indicator to R package update check
+
 ## 0.0.9
 
 - Added an optional R logo next to package names to enhance visual clarity
