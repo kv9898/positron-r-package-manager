@@ -28,11 +28,12 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "positron-r-package-manager" sees its sidebar refreshed!');
 
 	vscode.commands.registerCommand('positron-r-package-manager.refreshPackages', async () => {
-		const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
+		// const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
 
+		const hasR  = await positron.runtime.getActiveSessions().then((sessions) => sessions.some((session) => session.runtimeMetadata.languageId === 'r'));
 		if (!hasR) {
 			vscode.window.showWarningMessage(
-				vscode.l10n.t('No R runtime available. Please start an R session.')
+				vscode.l10n.t('No active R console session available. Please start one.')
 			);
 			return;
 		}
