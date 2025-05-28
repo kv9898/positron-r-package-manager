@@ -174,6 +174,13 @@ declare module 'positron' {
 		Error = 'error',
 
 		/**
+		 * The runtime session was transferred somewhere else. This happens when
+		 * it is loaded into a different Positron window; it 'exits' from the
+		 * old window and is reconnected in the new window.
+		 */
+		Transferred = 'transferred',
+
+		/**
 		 * The runtime exited for an unknown reason. This typically means that
 		 * it exited unexpectedly but with a normal exit code (0).
 		 */
@@ -187,6 +194,9 @@ declare module 'positron' {
 	export interface LanguageRuntimeExit {
 		/** Runtime name */
 		runtime_name: string;
+
+		/** Session name */
+		session_name: string;
 
 		/**
 		 * The process exit code, if the runtime is backed by a process. If the
@@ -455,14 +465,25 @@ declare module 'positron' {
 		 * when creating a new session from the metadata.
 		 */
 		extraRuntimeData: any;
+
+		/**
+		 * Subscriptions to notifications from the UI. When subscribed, the frontend sends
+		 * notifications to the backend via the UI client.
+		 */
+		uiSubscriptions?: UiRuntimeNotifications[];
+	}
+
+	/**
+	 * UI notifications from frontend to backends.
+	 */
+	export enum UiRuntimeNotifications {
+		/** Notification that the settings for rendering a plot have changed, typically because the plot area did */
+		DidChangePlotsRenderSettings = 'did_change_plots_render_settings',
 	}
 
 	export interface RuntimeSessionMetadata {
 		/** The ID of this session */
 		readonly sessionId: string;
-
-		/** The user-facing name of this session */
-		readonly sessionName: string;
 
 		/** The session's mode */
 		readonly sessionMode: LanguageRuntimeSessionMode;
@@ -500,6 +521,9 @@ declare module 'positron' {
 
 		/** The text the language's interpreter uses to prompt the user for continued input, e.g. "+" or "..." */
 		continuationPrompt: string;
+
+		/** The user-facing name of this session */
+		sessionName: string;
 	}
 
 	export enum LanguageRuntimeStartupBehavior {
@@ -603,6 +627,38 @@ declare module 'positron' {
 	}
 
 	/**
+	 * A variable in the runtime's memory or environment.
+	 */
+	export interface RuntimeVariable {
+		/** An internal access key for the variable */
+		access_key: string;
+
+		/** A human-readable display name for the variable */
+		display_name: string;
+
+		/** The type of the variable (string, number, etc.) */
+		display_type: string;
+
+		/** A string representation of the value of the variable */
+		display_value: string;
+
+		/**
+		 * Extended type information naming e.g. the exact class name of the
+		 * variable
+		 */
+		type_info?: string;
+
+		/** The length of the variable, e.g. number of elements in an array */
+		length: number;
+
+		/** The size of a variable, e.g. in bytes */
+		size: number;
+
+		/** Whether the variable has child variables, e.g columns in a data frame */
+		has_children: boolean;
+	}
+
+	/**
 	 * The possible types of language model that can be used with the Positron Assistant.
 	 */
 	export enum PositronLanguageModelType {
@@ -618,7 +674,15 @@ declare module 'positron' {
 		Terminal = 'terminal',
 		Notebook = 'notebook',
 		Editor = 'editor',
-		EditingSession = 'editing-session',
+	}
+
+	/**
+	 * The possible modes for a Positron Assistant chat request.
+	 */
+	export enum PositronChatMode {
+		Ask = 'ask',
+		Edit = 'edit',
+		Agent = 'agent',
 	}
 
 	/**
@@ -651,18 +715,59 @@ declare module 'positron' {
 	}
 
 	/**
-	 * RuntimeVariablesClient is a client that tracks the variables in the runtime.
+	 * Code attribution sources for code executed by Positron.
 	 */
-	export interface RuntimeVariablesClient extends RuntimeClientInstance {
-		onDidChangeVariables: vscode.Event<Array<Variable>>;
-		getCurrentVariables(): Array<Variable>;
+	export enum CodeAttributionSource {
+		/** The code was executed by an AI assistant. */
+		Assistant = 'assistant',
+
+		/** The code was executed by a Positron extension. */
+		Extension = 'extension',
+
+		/** The code was executed interactively (the user typed it in). */
+		Interactive = 'interactive',
+
+		/** The code was executed from a notebook cell. */
+		Notebook = 'notebook',
+
+		/** The code was pasted into the Console. */
+		Paste = 'paste',
+
+		/** The code was run as a fragment or whole of a script. */
+		Script = 'script',
 	}
 
-	export interface Variable {
-		name: string;
-		value: string;
-		length: number;
-		size: number;
+	/**
+	 * Code attribution metadata for code executed by Positron.
+	 */
+	export interface CodeAttribution {
+		/** The code's origin */
+		source: CodeAttributionSource;
+
+		/**
+		 * Additional metadata specific to the attribution source, if any. For
+		 * example, when code is executed from an extension, it names the
+		 * extension, and when code is executed from a script, it names the
+		 * script.
+		 */
+		metadata?: Record<string, any>;
+	}
+
+	/**
+	 * An event that is emitted when code is executed in Positron.
+	 */
+	export interface CodeExecutionEvent {
+		/** The ID of the language in which the code was executed (e.g. 'python') */
+		languageId: string;
+
+		/** The name of the runtime that executed the code (e.g. 'Python 3.12') */
+		runtimeName: string;
+
+		/** The actual code that was executed. */
+		code: string;
+
+		/** An object describing the origin of the code. */
+		attribution: CodeAttribution;
 	}
 
 	export interface LanguageRuntimeManager {
@@ -749,12 +854,13 @@ declare module 'positron' {
 		 * @param runtimeMetadata The metadata for the runtime that owns the
 		 * session.
 		 * @param sessionMetadata The metadata for the session to reconnect.
-		 *
+		 * @param sessionName The name of the session to reconnect.
 		 * @returns A Thenable that resolves with the reconnected session, or
 		 * rejects with an error.
 		 */
 		restoreSession?(runtimeMetadata: LanguageRuntimeMetadata,
-			sessionMetadata: RuntimeSessionMetadata):
+			sessionMetadata: RuntimeSessionMetadata,
+			sessionName: string):
 			Thenable<LanguageRuntimeSession>;
 	}
 
@@ -943,6 +1049,13 @@ declare module 'positron' {
 		 * should forcibly terminate any underlying processes.
 		 */
 		forceQuit(): Thenable<void>;
+
+		/**
+		 * Update the session name.
+		 *
+		 * @param sessionName The new session name
+		 */
+		updateSessionName(sessionName: string): void;
 
 		/**
 		 * Show runtime log in output panel.
@@ -1263,6 +1376,29 @@ declare module 'positron' {
 		installDependencies?: () => Promise<boolean>;
 	}
 
+	/**
+	 * Settings necessary to render a plot in the format expected by the plot widget.
+	 */
+	export interface PlotRenderSettings {
+		size: {
+			width: number;
+			height: number;
+		};
+		pixel_ratio: number;
+		format: PlotRenderFormat;
+	}
+
+	/**
+	 * Possible formats for rendering a plot.
+	 */
+	export enum PlotRenderFormat {
+		Png = 'png',
+		Jpeg = 'jpeg',
+		Svg = 'svg',
+		Pdf = 'pdf',
+		Tiff = 'tiff'
+	}
+
 	namespace languages {
 		/**
 		 * Register a statement range provider.
@@ -1365,13 +1501,14 @@ declare module 'positron' {
 			okButtonTitle?: string): Thenable<null>;
 
 		/**
-		 * Get the `Console` for a runtime language `id`
+		 * Get the `Console` for a runtime `languageId`
 		 *
-		 * @param id The runtime language `id` to retrieve a `Console` for, i.e. 'r' or 'python'.
+		 * @param languageId The runtime language id to retrieve a `Console` for, i.e. 'r' or 'python'.
 		 *
-		 * @returns A `Console`, or `undefined` if no `Console` for that language exists.
+		 * @returns A Thenable that resolves to a `Console` or `undefined` if no `Console` for
+		 *   that `languageId` exists.
 		 */
-		export function getConsoleForLanguage(id: string): Console | undefined;
+		export function getConsoleForLanguage(languageId: string): Thenable<Console | undefined>;
 
 		/**
 		 * Fires when the width of the console input changes. The new width is passed as
@@ -1384,6 +1521,18 @@ declare module 'positron' {
 		 * Returns the current width of the console input, in characters.
 		 */
 		export function getConsoleWidth(): Thenable<number>;
+
+		/**
+		 * Fires when the settings necessary to render a plot in the format expected by
+		 * plot widget have changed.
+		 */
+		export const onDidChangePlotsRenderSettings: vscode.Event<PlotRenderSettings>;
+
+		/**
+		 * Returns the settings necessary to render a plot in the format expected by
+		 * plot widget.
+		 */
+		export function getPlotsRenderSettings(): Thenable<PlotRenderSettings>;
 	}
 
 	namespace runtime {
@@ -1500,7 +1649,8 @@ declare module 'positron' {
 		/**
 		 * Register a language runtime manager with Positron.
 		 *
-		 * @param languageId The language ID for which the runtime
+		 * @param languageId The language ID for which the manager can provide
+		 * runtimes
 		 * @returns A disposable that unregisters the manager when disposed.
 		 *
 		 */
@@ -1515,8 +1665,10 @@ declare module 'positron' {
 		 * Get the preferred language runtime for a given language.
 		 *
 		 * @param languageId The language ID of the preferred runtime
+		 * @returns The preferred runtime metadata, or undefined if no eligible runtimes
+		 *  are registered.
 		 */
-		export function getPreferredRuntime(languageId: string): Thenable<LanguageRuntimeMetadata>;
+		export function getPreferredRuntime(languageId: string): Thenable<LanguageRuntimeMetadata | undefined>;
 
 		/**
 		 * List all active sessions.
@@ -1565,6 +1717,27 @@ declare module 'positron' {
 		export function restartSession(sessionId: string): Thenable<void>;
 
 		/**
+		 * Focus a running session
+		 */
+		export function focusSession(sessionId: string): void;
+
+		/**
+		 * Get the runtime variables for a session.
+		 *
+		 * @param sessionId The session ID of the session to get the variables for.
+		 * @param accessKeys An optional array of access keys. Each access key
+		 * is an array listing the path to a variable. If no access keys are
+		 * provided, all variables will be returned.
+		 *
+		 * @returns A Thenable that resolves with an array of runtime
+		 * variables.
+		 */
+		export function getSessionVariables(
+			sessionId: string,
+			accessKeys?: Array<Array<string>>):
+			Thenable<Array<Array<RuntimeVariable>>>;
+
+		/**
 		 * Register a handler for runtime client instances. This handler will be called
 		 * whenever a new client instance is created by a language runtime of the given
 		 * type.
@@ -1590,6 +1763,11 @@ declare module 'positron' {
 		 * An event that fires when the foreground session changes
 		 */
 		export const onDidChangeForegroundSession: vscode.Event<string | undefined>;
+
+		/**
+		 * An event that fires when code is executed.
+		 */
+		export const onDidExecuteCode: vscode.Event<CodeExecutionEvent>;
 	}
 
 	// FIXME: The current (and clearly not final) state of an experiment to bring in interface(s)
@@ -1652,6 +1830,29 @@ declare module 'positron' {
 	}
 
 	/**
+	 * An object that describes an environment variable action.
+	 */
+	export interface EnvironmentVariableAction {
+		/** The action to take - replace, append, or prepend */
+		action: vscode.EnvironmentVariableMutatorType;
+
+		/** The name of the variable on which to take the action */
+		name: string;
+
+		/** The value to replace, append, or prepend */
+		value: string;
+	}
+
+	namespace environment {
+		/**
+		 * Get the environment variable contributions for the current session.
+		 *
+		 * @returns A map of extension IDs to arrays of environment variable actions.
+		 */
+		export function getEnvironmentContributions(): Thenable<Record<string, EnvironmentVariableAction[]>>;
+	}
+
+	/**
 	 * Refers to methods related to the connections pane
 	 */
 	namespace connections {
@@ -1677,11 +1878,20 @@ declare module 'positron' {
 			provider: string;
 			identifier: string;
 
+			providerName: string;
+			maxOutputTokens: number;
+
+			readonly capabilities?: {
+				readonly vision?: boolean;
+				readonly toolCalling?: boolean;
+				readonly agentMode?: boolean;
+			};
+
 			/**
 			 * Handle a language model request with tool calls and streaming chat responses.
 			 */
 			provideLanguageModelResponse(
-				messages: vscode.LanguageModelChatMessage[],
+				messages: Array<vscode.LanguageModelChatMessage>,
 				options: vscode.LanguageModelChatRequestOptions,
 				extensionId: string,
 				progress: vscode.Progress<{
@@ -1719,6 +1929,7 @@ declare module 'positron' {
 				description: string;
 				isSticky?: boolean;
 			}[];
+			modes: PositronChatMode[];
 			locations: PositronChatAgentLocation[];
 			disambiguation: { category: string; description: string; examples: string[] }[];
 		}
@@ -1747,6 +1958,7 @@ declare module 'positron' {
 			}[keyof LanguageModelConfig], undefined>[];
 			defaults: LanguageModelConfigOptions;
 			signedIn?: boolean;
+			authMethods?: string[];
 		}
 
 		/**
@@ -1765,11 +1977,13 @@ declare module 'positron' {
 			model: string;
 			baseUrl?: string;
 			apiKey?: string;
+			oauth?: boolean;
 			toolCalls?: boolean;
 			resourceName?: string;
 			project?: string;
 			location?: string;
 			numCtx?: number;
+			maxOutputTokens?: number;
 		}
 
 		/**
@@ -1828,15 +2042,22 @@ declare module 'positron' {
 		 * The context in which a chat request is made.
 		 */
 		export interface ChatContext {
-			console?: {
+			activeSession?: {
+				identifier: string;
 				language: string;
 				version: string;
+				mode: LanguageRuntimeSessionMode;
+				notebookUri?: vscode.Uri;
+				executions: {
+					input: string;
+					output: string;
+					error?: any;
+				}[];
 			};
-			variables?: {
-				name: string;
-				value: string;
-				type: string;
-			}[];
+			plots?: {
+				hasPlots: boolean;
+			};
+			variables?: RuntimeVariable[];
 			shell?: string;
 		}
 	}
