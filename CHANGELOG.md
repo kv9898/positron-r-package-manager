@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.1.1
+
+- Switched from detecting R runtimes to detecting active console sessions for refreshes
+
 ## 0.1.0
 
 - Added progress indicator to R package update check
