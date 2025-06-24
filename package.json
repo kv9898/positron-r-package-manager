@@ -76,6 +76,11 @@
         "command": "positron-r-package-manager.searchPackages",
         "title": "%search.packages%",
         "icon": "$(search)"
+      },
+      {
+        "command": "positron-r-package-manager.filterLoadedPackages",
+        "title": "Filter loaded packages",
+        "icon": "$(filter)"
       }
     ],
     "viewsContainers": {
@@ -112,6 +117,12 @@
           "command": "positron-r-package-manager.searchPackages",
           "when": "view == rPackageView",
           "group": "navigation@99"
+        },
+        {
+          "command": "positron-r-package-manager.filterLoadedPackages",
+          "when": "view == rPackageView",
+          "group": "navigation@3",
+          "toggle": true
         },
         {
           "command": "positron-r-package-manager.refreshPackages",

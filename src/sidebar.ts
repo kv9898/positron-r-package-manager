@@ -16,6 +16,7 @@ export interface RPackageInfo {
 
 export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
     private filterText: string = '';
+    private showOnlyLoadedPackages: boolean = false;
     private _onDidChangeTreeData: vscode.EventEmitter<RPackageItem | undefined | void> = new vscode.EventEmitter();
     readonly onDidChangeTreeData: vscode.Event<RPackageItem | undefined | void> = this._onDidChangeTreeData.event;
 
@@ -63,6 +64,10 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
             });
 
             filtered = matches.map(m => m.pkg);
+        }
+
+        if (this.showOnlyLoadedPackages) {
+            filtered = filtered.filter(pkg => pkg.loaded);
         }
 
         if (filtered.length === 0) {
@@ -123,6 +128,11 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
      */
     getPackages(): RPackageInfo[] {
         return this.packages;
+    }
+
+    toggleShowOnlyLoadedPackages() {
+        this.showOnlyLoadedPackages = !this.showOnlyLoadedPackages;
+        this._onDidChangeTreeData.fire(); // Refresh the tree
     }
 }
 
