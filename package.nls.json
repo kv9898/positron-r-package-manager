@@ -10,5 +10,5 @@
     "search.packages": "R: Search for installed packages",
     "packages": "Packages",
     "showRIcon": "Show an R icon next to package names",
-    "filterLoadedPackages": "Show loaded packages"
+    "filterLoadedPackages": "R: Show loaded packages"
 }
