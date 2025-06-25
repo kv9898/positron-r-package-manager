@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.1.2
+
+- Added a toggle to show only loaded packages in the sidebar- Added a toggle in the sidebar to show only loaded packages, improving package navigation
+
 ## 0.1.1
 
 - Switched from detecting R runtimes to detecting active console sessions for refreshes

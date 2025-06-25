@@ -37,6 +37,7 @@ You can always move it back or rearrange it as you prefer.
 - ✅ **Update** outdated packages with version preview and multi-select
 - ✅ **Uninstall** packages with a single click
 - ✅ 🔍 **Search** by name or title (fuzzy search supported)
+- ✅ Toggle to show **loaded** packages only
 - ✅ Checkbox toggling to load/unload
 
 ---
