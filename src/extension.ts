@@ -89,9 +89,14 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('positron-r-package-manager.uninstallPackage', (item: RPackageItem | undefined) => {
 			uninstallPackage(item, sidebarProvider);
 		}),
+
 		// update packages
 		vscode.commands.registerCommand('positron-r-package-manager.updatePackages', () => {
 			updatePackages(sidebarProvider);
+		}),
+
+		vscode.commands.registerCommand('positron-r-package-manager.filterLoadedPackages', () => {
+			sidebarProvider.toggleShowOnlyLoadedPackages();
 		})
 	);
 }
