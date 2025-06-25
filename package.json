@@ -79,7 +79,7 @@
       },
       {
         "command": "positron-r-package-manager.filterLoadedPackages",
-        "title": "Filter loaded packages",
+        "title": "%filterLoadedPackages%",
         "icon": "$(filter)"
       }
     ],
