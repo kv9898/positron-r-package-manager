@@ -9,5 +9,6 @@
     "refresh.packages": "R: 刷新包信息",
     "search.packages": "R: 搜索已安装的包",
     "packages": "包",
-    "showRIcon": "在包名称前显示R图标"
+    "showRIcon": "在包名称前显示R图标",
+    "filterLoadedPackages": "R: 显示已加载的包"
 }
