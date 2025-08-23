@@ -30,6 +30,7 @@
   "Search R packages — press Esc to clear filter, Enter to apply": "搜索已安装的 R 包 — 按 Esc 清空过滤器, Enter 应用",
   "e.g. plot": "例如 plot",
   "Error while fetching updates: {0}": "获取更新信息时出错: {0}",
+  "The 'pak' package appears to be missing. Would you like to install it?": "检测到缺少 'pak' 包。是否需要安装？",
   "The 'jsonlite' package appears to be missing. Would you like to install it?": "检测到缺少 'jsonlite' 包。是否需要安装？",
   "The 'devtools' package appears to be missing. Would you like to install it?": "检测到缺少 'devtools' 包。是否需要安装？",
   "A readRDS() error was encountered. Please restart R to continue.": "遇到了readRDS()错误。请重启R以继续。",
