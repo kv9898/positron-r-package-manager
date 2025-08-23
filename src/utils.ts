@@ -136,10 +136,17 @@ export function getObserver(
  */
 
 export function _installpackages(packages: string, path?: string) {
+    const installer = getDefaultInstaller();
     // Normalize path for R if provided
     const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';
 
-    const rCode = `install.packages(c(${packages})${libOption})`;
+    let rCode: string;
+
+    if (installer === 'pak') {
+        rCode = `pak::pkg_install(c(${packages})${libOption})`;
+    } else {
+        rCode = `install.packages(c(${packages})${libOption})`;
+    }
 
     const observer = getObserver("Error while installing {0}: {1}", [packages]);
 
