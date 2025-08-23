@@ -48,6 +48,17 @@
           "scope": "application",
           "default": false,
           "description": "%showRIcon%"
+        },
+        "positron-r-package-manager.defaultInstaller" :{
+          "type": "string",
+          "scope": "machine-overridable",
+          "default": "native",
+          "enum": ["native", "pak"],
+          "enumDescriptions": [
+            "Use install.packages() for package installation",
+            "Use pak::pkg_install() for package installation (requires pak package)"
+          ],
+          "description": "Default package installer to use"
         }
       }
     },
