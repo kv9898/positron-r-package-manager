@@ -6,13 +6,13 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { SidebarProvider } from './sidebar';
-import { getObserver, _installpackages } from './utils';
+import { getObserver, _installpackages, getDefaultInstaller } from './utils';
 
 /**
  * Install R packages from the command palette.
  *
  * This function prompts the user for package names, splits the input
- * into separate packages, and then runs `install.packages()` in the
+ * into separate packages, and then runs package installation in the
  * R runtime. After the installation is complete, it shows a success
  * message and refreshes the package list.
  *
@@ -119,21 +119,25 @@ async function installFromCran(libPath: string): Promise<void> {
 
 async function installFromGithub(libPath: string): Promise<void> {
     const repo = await vscode.window.showInputBox({
-        title: vscode.l10n.t(vscode.l10n.t('Install from GitHub')),
-        prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2)'),
-        ignoreFocusOut: true
+        title: vscode.l10n.t('Install from GitHub'),
+        prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2 or user/repo@v1.2.3)'),
+        ignoreFocusOut: true,
     });
-
     if (!repo?.trim()) { return; };
 
-    const rCode = libPath
-        ? `withr::with_libpaths("${libPath.replace(/\\/g, '/')}", devtools::install_github("${repo}"))`
-        : `devtools::install_github("${repo}")`;
+    const esc = (s: string) => s.replace(/\\/g, "/").replace(/"/g, '\\"');
+    const libOpt = libPath ? `, lib = "${esc(libPath)}"` : "";
+
+    const installer = getDefaultInstaller();
+
+    const rCode =
+        installer === "pak"
+            ? `pak::pkg_install("${esc(repo.trim())}"${libOpt})`
+            : `withr::with_libpaths(${libPath ? `"${esc(libPath)}"` : ".libPaths()[1]"}, devtools::install_github("${esc(repo.trim())}"))`;
 
     const observer = getObserver("Error while installing from {0}: {1}", [repo]);
-
     await positron.runtime.executeCode(
-        'r',
+        "r",
         rCode,
         true,
         undefined,
@@ -141,8 +145,8 @@ async function installFromGithub(libPath: string): Promise<void> {
         undefined,
         observer
     );
+
     vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
-    return;
 }
 
 async function installFromLocal(libPath: string): Promise<void> {
@@ -156,16 +160,28 @@ async function installFromLocal(libPath: string): Promise<void> {
     ;
     const path = result[0].fsPath.replace(/\\/g, '/');
 
-    const rCode = libPath
-        ? `install.packages("${path}", repos = NULL, type = "source", lib = "${libPath}")`
-        : `install.packages("${path}", repos = NULL, type = "source")`;
+    const installer = getDefaultInstaller();
+    const libOption = libPath ? `, lib = "${libPath.replace(/\\/g, '/')}"` : '';
 
+    let rCode: string;
+
+    if (installer === 'pak') {
+        rCode = `pak::local_install("${path}"${libOption})`;
+    } else {
+        const isZip = path.toLowerCase().endsWith(".zip");
+        const type = isZip ? "win.binary" : "source";
+        rCode = `install.packages("${path}", repos = NULL, type = "${type}"${libOption})`;
+    }
+
+    const observer = getObserver("Error while installing local package: {0}");
     await positron.runtime.executeCode(
         'r',
         rCode,
         true,
         undefined,
-        positron.RuntimeCodeExecutionMode.Interactive
+        positron.RuntimeCodeExecutionMode.Interactive,
+        undefined,
+        observer
     );
     vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     return;

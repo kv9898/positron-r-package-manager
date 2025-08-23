@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { RPackageItem, SidebarProvider } from './sidebar';
 import { refreshPackages } from './refresh';
-import { getFilterRedundant, getObserver, _installpackages } from './utils';
+import { getFilterRedundant, getObserver, _installpackages, getDefaultInstaller } from './utils';
 
 /**
  * Uninstalls an R package from the active R process.
@@ -99,7 +99,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
  * parses the JSON file and filters out packages with up-to-date versions in other library paths.
  * 
  * If there are outdated packages, the user is prompted to select which packages to update.
- * The selected packages are then updated by executing `install.packages()` for each one.
+ * The selected packages are then updated by executing package installation for each one.
  * 
  * After updating, the package list in the sidebar is refreshed to reflect the changes.
  * 
@@ -142,31 +142,31 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
 
     // Run R code to dump updates
     let parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[] | null = [];
-	await vscode.window.withProgress(
-		{
-			location: vscode.ProgressLocation.Notification,
-			title: vscode.l10n.t('Checking for R package updates...'),
-			cancellable: false
-		},
-		async () => {
-			await positron.runtime.executeCode(
-				'r',
-				rCode,
-				false,
-				undefined,
-				positron.RuntimeCodeExecutionMode.Silent,
-				undefined,
-				observer
-			);
+    await vscode.window.withProgress(
+        {
+            location: vscode.ProgressLocation.Notification,
+            title: vscode.l10n.t('Checking for R package updates...'),
+            cancellable: false
+        },
+        async () => {
+            await positron.runtime.executeCode(
+                'r',
+                rCode,
+                false,
+                undefined,
+                positron.RuntimeCodeExecutionMode.Silent,
+                undefined,
+                observer
+            );
 
             // Parse updates
-			try {
-				parsed = parsePackageUpdateJson(tmpPath);
-			} catch (err) {
-				parsed = null; // signal failure
-			}
-		}
-	);
+            try {
+                parsed = parsePackageUpdateJson(tmpPath);
+            } catch (err) {
+                parsed = null; // signal failure
+            }
+        }
+    );
 
     if (!parsed) {
         vscode.window.showErrorMessage(vscode.l10n.t('Failed to retrieve updatable packages.'));
@@ -195,9 +195,14 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     }
 
     // Build update commands per package
+    const installer = getDefaultInstaller();
     const updateCommands = selected.map(pkg => {
         const libPath = pkg.LibPath.replace(/\\/g, '/');
-        return `install.packages("${pkg.Package}", lib = "${libPath}")`;
+        if (installer === 'pak') {
+            return `pak::pkg_install("${pkg.Package}", lib = "${libPath}")`;
+        } else {
+            return `install.packages("${pkg.Package}", lib = "${libPath}")`;
+        }
     });
 
     const updateCode = updateCommands.join('\n');

@@ -42,6 +42,19 @@ export function getShowRIcon(): boolean {
 }
 
 /**
+ * Gets the configuration value of `defaultInstaller`.
+ *
+ * Returns the default package installer to use: "native" for install.packages()
+ * or "pak" for pak::pkg_install().
+ *
+ * @returns The value of the configuration setting.
+ */
+export function getDefaultInstaller(): string {
+    const config = vscode.workspace.getConfiguration('positron-r-package-manager');
+    return config.get<string>('defaultInstaller', 'native');
+}
+
+/**
  * Returns an ExecutionObserver that shows an error message using the given template
  * string, formatted with the given template arguments. If the error is due to a
  * missing 'jsonlite' package, it will prompt the user to install it. Optionally,
@@ -60,6 +73,26 @@ export function getObserver(
 
     function errorHandling(error: string) {
         const fullArgs = [...templateArguments, error];
+        // Check for pak-specific error
+        if (/pak/i.test(error)) {
+            vscode.window.showWarningMessage(
+                vscode.l10n.t("The 'pak' package appears to be missing. Would you like to install it?"),
+                vscode.l10n.t("Install"),
+                vscode.l10n.t("Use Native Installer")
+            ).then(selection => {
+                if (selection === vscode.l10n.t("Install")) {
+                    _installpackages('"pak"', undefined, 'native');
+                } else if (selection === vscode.l10n.t("Use Native Installer")) {
+                    // Reset the default installer setting to 'native'
+                    const config = vscode.workspace.getConfiguration('positron-r-package-manager');
+                    config.update('defaultInstaller', 'native', vscode.ConfigurationTarget.Global);
+
+                    vscode.window.showInformationMessage(
+                        vscode.l10n.t("Default installer set to 'native'. You can change this in settings.")
+                    );
+                }
+            });
+        }
         // Check for jsonlite-specific error
         if (/jsonlite/i.test(error)) {
             vscode.window.showWarningMessage(
@@ -118,15 +151,23 @@ export function getObserver(
 /**
  * Installs one or more R packages from the command line.
  * @param packages A comma-separated string of R package names to install.
- * @param sidebarProvider The SidebarProvider instance to refresh after installation.
- * @returns A promise that resolves when the installation is complete.
+ * @param path Optional library path for installation.
+ * @param installer Optional installer type override ("native" or "pak").
+ *                  If not provided, uses the configured default installer.
  */
 
-export function _installpackages(packages: string, path?: string) {
+export function _installpackages(packages: string, path?: string, installer?: string) {
+    if (!installer) { installer = getDefaultInstaller(); }
     // Normalize path for R if provided
     const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';
 
-    const rCode = `install.packages(c(${packages})${libOption})`;
+    let rCode: string;
+
+    if (installer === 'pak') {
+        rCode = `pak::pkg_install(c(${packages})${libOption})`;
+    } else {
+        rCode = `install.packages(c(${packages})${libOption})`;
+    }
 
     const observer = getObserver("Error while installing {0}: {1}", [packages]);
 

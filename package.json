@@ -48,6 +48,17 @@
           "scope": "application",
           "default": false,
           "description": "%showRIcon%"
+        },
+        "positron-r-package-manager.defaultInstaller" :{
+          "type": "string",
+          "scope": "resource",
+          "default": "native",
+          "enum": ["native", "pak"],
+          "enumDescriptions": [
+            "%defaultInstaller::native%",
+            "%defaultInstaller::pak%"
+          ],
+          "description": "%defaultInstaller%"
         }
       }
     },

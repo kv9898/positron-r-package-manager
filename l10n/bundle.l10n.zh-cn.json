@@ -1,6 +1,8 @@
 {
   "Yes": "是",
   "Install": "安装",
+  "Use Native Installer": "使用原生安装器",
+  "Default installer set to 'native'. You can change this in settings.": "已将默认安装器设置为 'native'。你可以之后在设置中更改。",
   "Restart R": "重启R",
   "No R package information available yet.": "暂无 R 包信息。",
   "Try to refresh after R starts or clear search.": "请在R启动之后尝试刷新或清空搜索。",
@@ -30,6 +32,7 @@
   "Search R packages — press Esc to clear filter, Enter to apply": "搜索已安装的 R 包 — 按 Esc 清空过滤器, Enter 应用",
   "e.g. plot": "例如 plot",
   "Error while fetching updates: {0}": "获取更新信息时出错: {0}",
+  "The 'pak' package appears to be missing. Would you like to install it?": "检测到缺少 'pak' 包。是否需要安装？",
   "The 'jsonlite' package appears to be missing. Would you like to install it?": "检测到缺少 'jsonlite' 包。是否需要安装？",
   "The 'devtools' package appears to be missing. Would you like to install it?": "检测到缺少 'devtools' 包。是否需要安装？",
   "A readRDS() error was encountered. Please restart R to continue.": "遇到了readRDS()错误。请重启R以继续。",
