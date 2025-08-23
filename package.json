@@ -51,7 +51,7 @@
         },
         "positron-r-package-manager.defaultInstaller" :{
           "type": "string",
-          "scope": "machine-overridable",
+          "scope": "resource",
           "default": "native",
           "enum": ["native", "pak"],
           "enumDescriptions": [
