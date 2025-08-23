@@ -168,7 +168,9 @@ async function installFromLocal(libPath: string): Promise<void> {
     if (installer === 'pak') {
         rCode = `pak::local_install("${path}"${libOption})`;
     } else {
-        rCode = `install.packages("${path}", repos = NULL, type = "source"${libOption})`;
+        const isZip = path.toLowerCase().endsWith(".zip");
+        const type = isZip ? "win.binary" : "source";
+        rCode = `install.packages("${path}", repos = NULL, type = "${type}"${libOption})`;
     }
 
     const observer = getObserver("Error while installing local package: {0}");
