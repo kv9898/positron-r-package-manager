@@ -28,6 +28,14 @@ export function getFilterRedundant(): boolean {
     return config.get<boolean>('filterOutdatedIfUpToDateElsewhere', true);
 }
 
+/**
+ * Gets the configuration value of `showRIcon`.
+ *
+ * If true, the extension will display a small R logo next to each package in the sidebar to
+ * visually indicate package entries.
+ *
+ * @returns The value of the configuration setting.
+ */
 export function getShowRIcon(): boolean {
     const config = vscode.workspace.getConfiguration('positron-r-package-manager');
     return config.get<boolean>('showRIcon', false);
