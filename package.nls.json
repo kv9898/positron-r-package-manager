@@ -10,6 +10,6 @@
     "search.packages": "R: Search for installed packages",
     "packages": "Packages",
     "showRIcon": "Show an R icon next to package names",
-    "defaultInstaller": "Default package installer to use",
+    "defaultInstaller": "Default package installer to install R packages",
     "filterLoadedPackages": "R: Show loaded packages"
 }
