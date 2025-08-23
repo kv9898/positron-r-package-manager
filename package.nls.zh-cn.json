@@ -10,5 +10,6 @@
     "search.packages": "R: 搜索已安装的包",
     "packages": "包",
     "showRIcon": "在包名称前显示R图标",
+    "defaultInstaller": "默认安装器",
     "filterLoadedPackages": "R: 显示已加载的包"
 }

@@ -58,7 +58,7 @@
             "Use install.packages() for package installation",
             "Use pak::pkg_install() for package installation (requires pak package)"
           ],
-          "description": "Default package installer to use"
+          "description": "%defaultInstaller%"
         }
       }
     },
