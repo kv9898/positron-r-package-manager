@@ -42,6 +42,19 @@ export function getShowRIcon(): boolean {
 }
 
 /**
+ * Gets the configuration value of `defaultInstaller`.
+ *
+ * Returns the default package installer to use: "native" for install.packages()
+ * or "pak" for pak::pkg_install().
+ *
+ * @returns The value of the configuration setting.
+ */
+export function getDefaultInstaller(): string {
+    const config = vscode.workspace.getConfiguration('positron-r-package-manager');
+    return config.get<string>('defaultInstaller', 'native');
+}
+
+/**
  * Returns an ExecutionObserver that shows an error message using the given template
  * string, formatted with the given template arguments. If the error is due to a
  * missing 'jsonlite' package, it will prompt the user to install it. Optionally,
