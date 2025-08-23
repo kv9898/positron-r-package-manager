@@ -2,6 +2,14 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.1.3
+
+- Added support for pak package installer as an alternative to `install.packages()`
+- Added configuration option to choose between "native" (`install.packages`) and "pak" installers
+- Improved local package installation to properly handle .zip files as binary packages
+- Enhanced error handling with automatic fallback to native installer when pak is unavailable
+- Added GitHub and local package installation support for pak installer
+
 ## 0.1.2
 
 - Added a toggle to show only loaded packages in the sidebar- Added a toggle in the sidebar to show only loaded packages, improving package navigation
