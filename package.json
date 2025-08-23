@@ -55,8 +55,8 @@
           "default": "native",
           "enum": ["native", "pak"],
           "enumDescriptions": [
-            "Use install.packages() for package installation",
-            "Use pak::pkg_install() for package installation (requires pak package)"
+            "%defaultInstaller::native%",
+            "%defaultInstaller::pak%"
           ],
           "description": "%defaultInstaller%"
         }

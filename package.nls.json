@@ -11,5 +11,7 @@
     "packages": "Packages",
     "showRIcon": "Show an R icon next to package names",
     "defaultInstaller": "Default package installer to install R packages",
+    "defaultInstaller::native": "Use install.packages() for package installation",
+    "defaultInstaller::pak": "Use pak::pkg_install() for package installation (requires pak package)",
     "filterLoadedPackages": "R: Show loaded packages"
 }
