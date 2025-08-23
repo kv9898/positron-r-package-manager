@@ -77,10 +77,19 @@ export function getObserver(
         if (/pak/i.test(error)) {
             vscode.window.showWarningMessage(
                 vscode.l10n.t("The 'pak' package appears to be missing. Would you like to install it?"),
-                vscode.l10n.t("Install")
+                vscode.l10n.t("Install"),
+                vscode.l10n.t("Use Native Installer")
             ).then(selection => {
                 if (selection === vscode.l10n.t("Install")) {
                     _installpackages('"pak"', undefined, 'native');
+                } else if (selection === vscode.l10n.t("Use Native Installer")) {
+                    // Reset the default installer setting to 'native'
+                    const config = vscode.workspace.getConfiguration('positron-r-package-manager');
+                    config.update('defaultInstaller', 'native', vscode.ConfigurationTarget.Global);
+
+                    vscode.window.showInformationMessage(
+                        vscode.l10n.t("Default installer set to 'native'. You can change this in settings.")
+                    );
                 }
             });
         }

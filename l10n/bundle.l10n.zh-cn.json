@@ -1,6 +1,8 @@
 {
   "Yes": "是",
   "Install": "安装",
+  "Use Native Installer": "使用原生安装器",
+  "Default installer set to 'native'. You can change this in settings.": "已将默认安装器设置为 'native'。你可以之后在设置中更改。",
   "Restart R": "重启R",
   "No R package information available yet.": "暂无 R 包信息。",
   "Try to refresh after R starts or clear search.": "请在R启动之后尝试刷新或清空搜索。",
