@@ -119,21 +119,27 @@ async function installFromCran(libPath: string): Promise<void> {
 
 async function installFromGithub(libPath: string): Promise<void> {
     const repo = await vscode.window.showInputBox({
-        title: vscode.l10n.t(vscode.l10n.t('Install from GitHub')),
-        prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2)'),
-        ignoreFocusOut: true
+        title: vscode.l10n.t('Install from GitHub'),
+        prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2 or user/repo@v1.2.3)'),
+        ignoreFocusOut: true,
     });
-
     if (!repo?.trim()) { return; };
 
-    const rCode = libPath
-        ? `withr::with_libpaths("${libPath.replace(/\\/g, '/')}", devtools::install_github("${repo}"))`
-        : `devtools::install_github("${repo}")`;
+    const esc = (s: string) => s.replace(/\\/g, "/").replace(/"/g, '\\"');
+    const libOpt = libPath ? `, lib = "${esc(libPath)}"` : "";
+
+    const installer = getDefaultInstaller();
+    const ghSpec = repo.includes("github::") ? repo.trim() : `github::${repo.trim()}`;
+
+    const rCode =
+        installer === "pak"
+            ? `pak::pkg_install(${esc(ghSpec)}${libOpt}, ask = FALSE, upgrade = FALSE)`
+            : `withr::with_libpaths(${libPath ? `"${esc(libPath)}"` : ".libPaths()[1]"}, 
+          devtools::install_github(${esc(repo.trim())}))`;
 
     const observer = getObserver("Error while installing from {0}: {1}", [repo]);
-
     await positron.runtime.executeCode(
-        'r',
+        "r",
         rCode,
         true,
         undefined,
@@ -141,8 +147,8 @@ async function installFromGithub(libPath: string): Promise<void> {
         undefined,
         observer
     );
+
     vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
-    return;
 }
 
 async function installFromLocal(libPath: string): Promise<void> {
