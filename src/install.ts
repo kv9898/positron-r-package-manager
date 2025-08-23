@@ -6,13 +6,13 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { SidebarProvider } from './sidebar';
-import { getObserver, _installpackages } from './utils';
+import { getObserver, _installpackages, getDefaultInstaller } from './utils';
 
 /**
  * Install R packages from the command palette.
  *
  * This function prompts the user for package names, splits the input
- * into separate packages, and then runs `install.packages()` in the
+ * into separate packages, and then runs package installation in the
  * R runtime. After the installation is complete, it shows a success
  * message and refreshes the package list.
  *
@@ -156,16 +156,26 @@ async function installFromLocal(libPath: string): Promise<void> {
     ;
     const path = result[0].fsPath.replace(/\\/g, '/');
 
-    const rCode = libPath
-        ? `install.packages("${path}", repos = NULL, type = "source", lib = "${libPath}")`
-        : `install.packages("${path}", repos = NULL, type = "source")`;
+    const installer = getDefaultInstaller();
+    const libOption = libPath ? `, lib = "${libPath.replace(/\\/g, '/')}"` : '';
 
+    let rCode: string;
+
+    if (installer === 'pak') {
+        rCode = `pak::local_install("${path}"${libOption})`;
+    } else {
+        rCode = `install.packages("${path}", repos = NULL, type = "source"${libOption})`;
+    }
+
+    const observer = getObserver("Error while installing local package: {0}");
     await positron.runtime.executeCode(
         'r',
         rCode,
         true,
         undefined,
-        positron.RuntimeCodeExecutionMode.Interactive
+        positron.RuntimeCodeExecutionMode.Interactive,
+        undefined,
+        observer
     );
     vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
     return;
