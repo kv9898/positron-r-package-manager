@@ -76,6 +76,12 @@ This extension provides the following setting:
   _(boolean, default: false)_
   When enabled, displays a small R logo next to each package in the sidebar to visually indicate package entries.
 
+- `positron-r-package-manager.defaultInstaller`
+  _(string, default: `"native"`)_
+  Choose which package installer to use:
+  - `"native"`: Use R's built-in `install.packages()` function
+  - `"pak"`: Use the `pak::pkg_install()` function (requires the pak package to be installed)
+
 You can configure this setting in your VS Code settings (`settings.json`) or through the Settings UI.
 
 ---
