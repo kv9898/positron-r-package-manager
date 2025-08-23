@@ -131,12 +131,13 @@ export function getObserver(
 /**
  * Installs one or more R packages from the command line.
  * @param packages A comma-separated string of R package names to install.
- * @param sidebarProvider The SidebarProvider instance to refresh after installation.
- * @returns A promise that resolves when the installation is complete.
+ * @param path Optional library path for installation.
+ * @param installer Optional installer type override ("native" or "pak").
+ *                  If not provided, uses the configured default installer.
  */
 
-export function _installpackages(packages: string, path?: string) {
-    const installer = getDefaultInstaller();
+export function _installpackages(packages: string, path?: string, installer?: string) {
+    if (!installer) { installer = getDefaultInstaller(); }
     // Normalize path for R if provided
     const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';
 
