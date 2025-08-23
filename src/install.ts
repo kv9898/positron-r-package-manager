@@ -129,11 +129,10 @@ async function installFromGithub(libPath: string): Promise<void> {
     const libOpt = libPath ? `, lib = "${esc(libPath)}"` : "";
 
     const installer = getDefaultInstaller();
-    const ghSpec = repo.includes("github::") ? repo.trim() : `github::${repo.trim()}`;
 
     const rCode =
         installer === "pak"
-            ? `pak::pkg_install(${esc(ghSpec)}${libOpt}, ask = FALSE, upgrade = FALSE)`
+            ? `pak::pkg_install(${esc(repo.trim())}${libOpt}, ask = FALSE, upgrade = FALSE)`
             : `withr::with_libpaths(${libPath ? `"${esc(libPath)}"` : ".libPaths()[1]"}, 
           devtools::install_github(${esc(repo.trim())}))`;
 
