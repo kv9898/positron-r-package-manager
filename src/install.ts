@@ -132,7 +132,7 @@ async function installFromGithub(libPath: string): Promise<void> {
 
     const rCode =
         installer === "pak"
-            ? `pak::pkg_install("${esc(repo.trim())}"${libOpt})`
+            ? `pak::pkg_install("${esc(repo.trim())}"${libOpt}, ask = FALSE)`
             : `withr::with_libpaths(${libPath ? `"${esc(libPath)}"` : ".libPaths()[1]"}, devtools::install_github("${esc(repo.trim())}"))`;
 
     const observer = getObserver("Error while installing from {0}: {1}", [repo]);

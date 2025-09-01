@@ -164,7 +164,7 @@ export function _installpackages(packages: string, path?: string, installer?: st
     let rCode: string;
 
     if (installer === 'pak') {
-        rCode = `pak::pkg_install(c(${packages})${libOption})`;
+        rCode = `pak::pkg_install(c(${packages})${libOption}, ask = FALSE)`;
     } else {
         rCode = `install.packages(c(${packages})${libOption})`;
     }

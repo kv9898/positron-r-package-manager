@@ -199,7 +199,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     const updateCommands = selected.map(pkg => {
         const libPath = pkg.LibPath.replace(/\\/g, '/');
         if (installer === 'pak') {
-            return `pak::pkg_install("${pkg.Package}", lib = "${libPath}")`;
+            return `pak::pkg_install("${pkg.Package}", lib = "${libPath}", ask = FALSE)`;
         } else {
             return `install.packages("${pkg.Package}", lib = "${libPath}")`;
         }
