@@ -199,19 +199,23 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     let updateCode: string;
 
     if (installer === 'pak') {
-        // Single pak command for all packages - handles parallelization internally
-        const packages = selected.map(pkg => `"${pkg.Package}"`).join(', ');
-        const libPaths = [...new Set(selected.map(pkg => pkg.LibPath.replace(/\\/g, '/')))];
+        // Group packages by libpath
+        const packagesByLibPath: { [libPath: string]: string[] } = {};
 
-        if (libPaths.length === 1) {
-            updateCode = `pak::pkg_install(c(${packages}), lib = "${libPaths[0]}", ask = FALSE)`;
-        } else {
-            // If multiple library paths, we need to handle them individually
-            const pakCommands = selected.map(pkg =>
-                `pak::pkg_install("${pkg.Package}", lib = "${pkg.LibPath.replace(/\\/g, '/')}", ask = FALSE)`
-            );
-            updateCode = pakCommands.join('\n');
-        }
+        selected.forEach(pkg => {
+            const cleanLibPath = pkg.LibPath.replace(/\\/g, '/');
+            if (!packagesByLibPath[cleanLibPath]) {
+                packagesByLibPath[cleanLibPath] = [];
+            }
+            packagesByLibPath[cleanLibPath].push(`"${pkg.Package}"`);
+        });
+
+        // Create one pak command per libpath
+        const pakCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) =>
+            `pak::pkg_install(c(${packages.join(', ')}), lib = "${libPath}", ask = FALSE)`
+        );
+
+        updateCode = pakCommands.join('\n');
     } else {
         // install.packages - keep individual commands
         const updateCommands = selected.map(pkg =>
