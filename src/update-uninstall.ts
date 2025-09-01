@@ -196,16 +196,33 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
 
     // Build update commands per package
     const installer = getDefaultInstaller();
-    const updateCommands = selected.map(pkg => {
-        const libPath = pkg.LibPath.replace(/\\/g, '/');
-        if (installer === 'pak') {
-            return `pak::pkg_install("${pkg.Package}", lib = "${libPath}", ask = FALSE)`;
-        } else {
-            return `install.packages("${pkg.Package}", lib = "${libPath}")`;
-        }
-    });
+    let updateCode: string;
 
-    const updateCode = updateCommands.join('\n');
+    if (installer === 'pak') {
+        // Group packages by libpath
+        const packagesByLibPath: { [libPath: string]: string[] } = {};
+
+        selected.forEach(pkg => {
+            const cleanLibPath = pkg.LibPath.replace(/\\/g, '/');
+            if (!packagesByLibPath[cleanLibPath]) {
+                packagesByLibPath[cleanLibPath] = [];
+            }
+            packagesByLibPath[cleanLibPath].push(`"${pkg.Package}"`);
+        });
+
+        // Create one pak command per libpath
+        const pakCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) =>
+            `pak::pkg_install(c(${packages.join(', ')}), lib = "${libPath}", ask = FALSE)`
+        );
+
+        updateCode = pakCommands.join('\n');
+    } else {
+        // install.packages - keep individual commands
+        const updateCommands = selected.map(pkg =>
+            `install.packages("${pkg.Package}", lib = "${pkg.LibPath.replace(/\\/g, '/')}")`
+        );
+        updateCode = updateCommands.join('\n');
+    }
 
     await positron.runtime.executeCode(
         'r',
