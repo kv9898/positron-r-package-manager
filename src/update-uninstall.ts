@@ -196,16 +196,29 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
 
     // Build update commands per package
     const installer = getDefaultInstaller();
-    const updateCommands = selected.map(pkg => {
-        const libPath = pkg.LibPath.replace(/\\/g, '/');
-        if (installer === 'pak') {
-            return `pak::pkg_install("${pkg.Package}", lib = "${libPath}", ask = FALSE)`;
-        } else {
-            return `install.packages("${pkg.Package}", lib = "${libPath}")`;
-        }
-    });
+    let updateCode: string;
 
-    const updateCode = updateCommands.join('\n');
+    if (installer === 'pak') {
+        // Single pak command for all packages - handles parallelization internally
+        const packages = selected.map(pkg => `"${pkg.Package}"`).join(', ');
+        const libPaths = [...new Set(selected.map(pkg => pkg.LibPath.replace(/\\/g, '/')))];
+
+        if (libPaths.length === 1) {
+            updateCode = `pak::pkg_install(c(${packages}), lib = "${libPaths[0]}", ask = FALSE)`;
+        } else {
+            // If multiple library paths, we need to handle them individually
+            const pakCommands = selected.map(pkg =>
+                `pak::pkg_install("${pkg.Package}", lib = "${pkg.LibPath.replace(/\\/g, '/')}", ask = FALSE)`
+            );
+            updateCode = pakCommands.join('\n');
+        }
+    } else {
+        // install.packages - keep individual commands
+        const updateCommands = selected.map(pkg =>
+            `install.packages("${pkg.Package}", lib = "${pkg.LibPath.replace(/\\/g, '/')}")`
+        );
+        updateCode = updateCommands.join('\n');
+    }
 
     await positron.runtime.executeCode(
         'r',
