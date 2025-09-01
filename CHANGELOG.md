@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.1.4
+- Stopped `pak` from asking to install packages that are already installed
+- Parallelised package updates with `pak` for faster execution
+
 ## 0.1.3
 
 - Added support for pak package installer as an alternative to `install.packages()`
