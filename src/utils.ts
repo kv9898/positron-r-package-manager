@@ -219,9 +219,10 @@ export async function waitForFile(filePath: string, timeout = 1000): Promise<voi
  * @returns true if the library path is writeable; otherwise, false.
  */
 export function isLibPathWriteable(libPath: string): boolean {
+    const probe = join(libPath, `.__write_test_${process.pid}_${Date.now()}`);
     try {
-        // Check if we can write to the library path
-        fs.accessSync(libPath, fs.constants.W_OK);
+        fs.writeFileSync(probe, 'ok');
+        fs.unlinkSync(probe);
         return true;
     } catch (error) {
         // Show the error to the user using VS Code's notification system
