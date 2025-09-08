@@ -6,7 +6,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { SidebarProvider } from './sidebar';
-import { getObserver, _installpackages, getDefaultInstaller } from './utils';
+import { getObserver, _installpackages, getDefaultInstaller, isLibPathWriteable } from './utils';
 
 /**
  * Install R packages from the command palette.
@@ -22,7 +22,17 @@ export async function installPackages(): Promise<void> {
     // get lib paths
     const paths = await getLibPaths();
 
-    await installUI(paths[0]);
+    for (const path of paths) {
+        if (isLibPathWriteable(path)) {
+            installUI(path);
+            return;
+        }
+    }
+
+    vscode.window.showWarningMessage(
+        vscode.l10n.t("None of the library paths are writeable. Please select a custom path.")
+    );
+    await installUI(undefined);
 }
 
 async function getLibPaths(): Promise<string[]> {
@@ -62,13 +72,13 @@ async function getLibPaths(): Promise<string[]> {
     }
 }
 
-async function installUI(path: string): Promise<void> {
+async function installUI(path: string | undefined): Promise<void> {
     const options = [
         { label: vscode.l10n.t('Install from CRAN (Recommended)'), value: 'cran' },
         { label: vscode.l10n.t('Install from GitHub'), value: 'github' },
         { label: vscode.l10n.t('Install from local archive (.tar.gz or .zip)'), value: 'local' },
         {
-            label: vscode.l10n.t("Install to another directory (current: {0})", path),
+            label: vscode.l10n.t("Install to another directory (current: {0})", path ? path : vscode.l10n.t('none')),
             value: 'customLib'
         }
     ];
