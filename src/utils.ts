@@ -225,11 +225,6 @@ export function isLibPathWriteable(libPath: string): boolean {
         fs.unlinkSync(probe);
         return true;
     } catch (error) {
-        // Show the error to the user using VS Code's notification system
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        vscode.window.showWarningMessage(
-            vscode.l10n.t("Cannot write to library path '{0}': {1}", libPath, errorMessage)
-        );
         return false;
     }
 }
