@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.1.5
+- Add checks for library path writability before attempting package installations or updates, 
+  to prevent errors when using non-writable directories.
+
 ## 0.1.4
 - Stopped `pak` from asking to install packages that are already installed
 - Parallelised package updates with `pak` for faster execution
