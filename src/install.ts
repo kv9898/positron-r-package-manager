@@ -32,7 +32,7 @@ export async function installPackages(): Promise<void> {
     vscode.window.showWarningMessage(
         vscode.l10n.t("None of the library paths are writeable. Please select a custom path.")
     );
-    await installUI(undefined);
+    await changeLibPath();
 }
 
 async function getLibPaths(): Promise<string[]> {
@@ -72,13 +72,13 @@ async function getLibPaths(): Promise<string[]> {
     }
 }
 
-async function installUI(path: string | undefined): Promise<void> {
+async function installUI(path: string): Promise<void> {
     const options = [
         { label: vscode.l10n.t('Install from CRAN (Recommended)'), value: 'cran' },
         { label: vscode.l10n.t('Install from GitHub'), value: 'github' },
         { label: vscode.l10n.t('Install from local archive (.tar.gz or .zip)'), value: 'local' },
         {
-            label: vscode.l10n.t("Install to another directory (current: {0})", path ? path : vscode.l10n.t('none')),
+            label: vscode.l10n.t("Install to another directory (current: {0})", path),
             value: 'customLib'
         }
     ];
@@ -261,7 +261,16 @@ export async function changeLibPath(): Promise<void> {
         qp.hide();
 
         if (finalPath) {
+            if (!isLibPathWriteable(finalPath)) {
+                vscode.window.showErrorMessage(vscode.l10n.t('The selected path is not writeable. Please choose another path.'));
+                changeLibPath();
+                return;
+            }
             await installUI(finalPath);
+        } else {
+            vscode.window.showInformationMessage(vscode.l10n.t('No library path selected, please try again.'));
+            changeLibPath();
+            return;
         }
     });
 }
