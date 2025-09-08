@@ -219,12 +219,21 @@ export async function waitForFile(filePath: string, timeout = 1000): Promise<voi
  * @returns true if the library path is writeable; otherwise, false.
  */
 export function isLibPathWriteable(libPath: string): boolean {
+    try {
+        const stat = fs.statSync(libPath);
+        if (!stat.isDirectory()) {
+            return false;
+        }
+    } catch {
+        return false; // path doesn’t exist or is inaccessible
+    }
+
     const probe = join(libPath, `.__write_test_${process.pid}_${Date.now()}`);
     try {
         fs.writeFileSync(probe, 'ok');
         fs.unlinkSync(probe);
         return true;
-    } catch (error) {
+    } catch {
         return false;
     }
 }
