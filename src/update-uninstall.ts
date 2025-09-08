@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { RPackageItem, SidebarProvider } from './sidebar';
 import { refreshPackages } from './refresh';
-import { getFilterRedundant, getObserver, _installpackages, getDefaultInstaller } from './utils';
+import { getFilterRedundant, getObserver, _installpackages, getDefaultInstaller, isLibPathWriteable } from './utils';
 
 /**
  * Uninstalls an R package from the active R process.
@@ -211,9 +211,20 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
         });
 
         // Create one pak command per libpath
-        const pakCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) =>
-            `pak::pkg_install(c(${packages.join(', ')}), lib = "${libPath}", ask = FALSE)`
-        );
+        const pakCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) => {
+            // Check if the target library path is writeable
+            // If not, omit the lib argument to let pak use the default library path
+            const libArg = isLibPathWriteable(libPath) ? `lib = "${libPath}", ` : '';
+
+            if (libArg === '') {
+                vscode.window.showWarningMessage(
+                    vscode.l10n.t("Cannot write to library path '{0}', falling back to default", libPath)
+                );
+            }
+
+            // Generate pak command with package vector for parallel installation
+            return `pak::pkg_install(c(${packages.join(', ')}), ${libArg}ask = FALSE)`;
+        });
 
         updateCode = pakCommands.join('\n');
     } else {

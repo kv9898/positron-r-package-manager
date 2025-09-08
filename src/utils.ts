@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as positron from 'positron';
 import * as fs from 'fs';
+import { join } from 'path';
 
 /**
  * Remove ANSI escape codes from a string, so that only the plain text remains.
@@ -208,4 +209,31 @@ export async function waitForFile(filePath: string, timeout = 1000): Promise<voi
             }
         }, 100);
     });
+}
+
+/**
+ * Checks if a given library path is writeable by attempting to write a temporary
+ * file in the directory and then deleting it. If the operation is successful, the
+ * function returns true; otherwise, it returns false.
+ * @param libPath The path to check for writeability.
+ * @returns true if the library path is writeable; otherwise, false.
+ */
+export function isLibPathWriteable(libPath: string): boolean {
+    try {
+        const stat = fs.statSync(libPath);
+        if (!stat.isDirectory()) {
+            return false;
+        }
+    } catch {
+        return false; // path doesn’t exist or is inaccessible
+    }
+
+    const probe = join(libPath, `.__write_test_${process.pid}_${Date.now()}`);
+    try {
+        fs.writeFileSync(probe, 'ok');
+        fs.unlinkSync(probe);
+        return true;
+    } catch {
+        return false;
+    }
 }

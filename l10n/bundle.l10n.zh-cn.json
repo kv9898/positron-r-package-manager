@@ -55,5 +55,9 @@
   "Use as Library Path": "使用作为库路径",
   "Failed to create directory: {0}": "无法创建目录: {0}",
   "Install package": "安装包",
-  "Timeout waiting for file: {0}": "等待文件 {0} 超时"
+  "Timeout waiting for file: {0}": "等待文件 {0} 超时",
+  "Cannot write to library path '{0}', falling back to default": "无法写入库路径 '{0}'，使用默认路径",
+  "None of the library paths are writeable. Please select a custom path.": "没有可写的库路径。请选择一个自定义路径。",
+  "The selected path is not writeable. Please choose another path.": "所选路径不可写。请选择另一个路径。",
+  "No library path selected, please try again.": "未选择库路径，请重试。"
 }
