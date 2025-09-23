@@ -228,10 +228,33 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
 
         updateCode = pakCommands.join('\n');
     } else {
-        // install.packages - keep individual commands
-        const updateCommands = selected.map(pkg =>
-            `install.packages("${pkg.Package}", lib = "${pkg.LibPath.replace(/\\/g, '/')}")`
-        );
+        // install.packages - group packages by libpath to avoid multiple compilation prompts
+        const packagesByLibPath: { [libPath: string]: string[] } = {};
+
+        selected.forEach(pkg => {
+            const cleanLibPath = pkg.LibPath.replace(/\\/g, '/');
+            if (!packagesByLibPath[cleanLibPath]) {
+                packagesByLibPath[cleanLibPath] = [];
+            }
+            packagesByLibPath[cleanLibPath].push(`"${pkg.Package}"`);
+        });
+
+        // Create one install.packages command per libpath
+        const updateCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) => {
+            // Check if the target library path is writeable
+            // If not, omit the lib argument to let install.packages use the default library path
+            const libArg = isLibPathWriteable(libPath) ? `, lib = "${libPath}"` : '';
+
+            if (libArg === '') {
+                vscode.window.showWarningMessage(
+                    vscode.l10n.t("Cannot write to library path '{0}', falling back to default", libPath)
+                );
+            }
+
+            // Generate install.packages command with package vector
+            return `install.packages(c(${packages.join(', ')})${libArg})`;
+        });
+
         updateCode = updateCommands.join('\n');
     }
 
