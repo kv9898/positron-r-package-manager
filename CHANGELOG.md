@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.1.6
+- Fixed compilation prompt appearing multiple times during package updates with native installer
+- Package updates now group packages by library path to reduce installation prompts
+
 ## 0.1.5
 - Add checks for library path writability before attempting package installations or updates, 
   to prevent errors when using non-writable directories.
