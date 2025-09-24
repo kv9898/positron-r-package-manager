@@ -198,20 +198,21 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     const installer = getDefaultInstaller();
     let updateCode: string;
 
+    // Group packages by libpath
+    const packagesByLibPath: { [libPath: string]: string[] } = {};
+
+    selected.forEach(pkg => {
+        const cleanLibPath = pkg.LibPath.replace(/\\/g, '/');
+        if (!packagesByLibPath[cleanLibPath]) {
+            packagesByLibPath[cleanLibPath] = [];
+        }
+        packagesByLibPath[cleanLibPath].push(`"${pkg.Package}"`);
+    });
+
+    let updateCommands: string[] = [];
     if (installer === 'pak') {
-        // Group packages by libpath
-        const packagesByLibPath: { [libPath: string]: string[] } = {};
-
-        selected.forEach(pkg => {
-            const cleanLibPath = pkg.LibPath.replace(/\\/g, '/');
-            if (!packagesByLibPath[cleanLibPath]) {
-                packagesByLibPath[cleanLibPath] = [];
-            }
-            packagesByLibPath[cleanLibPath].push(`"${pkg.Package}"`);
-        });
-
         // Create one pak command per libpath
-        const pakCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) => {
+        updateCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) => {
             // Check if the target library path is writeable
             // If not, omit the lib argument to let pak use the default library path
             const libArg = isLibPathWriteable(libPath) ? `lib = "${libPath}", ` : '';
@@ -225,15 +226,26 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
             // Generate pak command with package vector for parallel installation
             return `pak::pkg_install(c(${packages.join(', ')}), ${libArg}ask = FALSE)`;
         });
-
-        updateCode = pakCommands.join('\n');
     } else {
-        // install.packages - keep individual commands
-        const updateCommands = selected.map(pkg =>
-            `install.packages("${pkg.Package}", lib = "${pkg.LibPath.replace(/\\/g, '/')}")`
-        );
-        updateCode = updateCommands.join('\n');
+        // install.packages
+
+        // Create one install.packages command per libpath
+        updateCommands = Object.entries(packagesByLibPath).map(([libPath, packages]) => {
+            // Check if the target library path is writeable
+            // If not, omit the lib argument to let install.packages use the default library path
+            const libArg = isLibPathWriteable(libPath) ? `, lib = "${libPath}"` : '';
+
+            if (libArg === '') {
+                vscode.window.showWarningMessage(
+                    vscode.l10n.t("Cannot write to library path '{0}', falling back to default", libPath)
+                );
+            }
+
+            // Generate install.packages command with package vector
+            return `install.packages(c(${packages.join(', ')})${libArg})`;
+        });
     }
+    updateCode = updateCommands.join('\n');
 
     await positron.runtime.executeCode(
         'r',
