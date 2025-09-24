@@ -151,27 +151,25 @@ The repository uses GitHub Actions for automated publishing:
 - **Package command in CI**: `npx vsce package`
 
 ### GitHub Actions Setup for Copilot Agent
-The repository includes special workflows designed for GitHub Copilot's coding agent environment:
+The repository includes a special CI workflow designed for GitHub Copilot's coding agent environment:
 
-#### Setup Workflow (`.github/workflows/setup.yml`)
-- **Purpose**: Pre-downloads all dependencies before firewall restrictions are enabled
+#### CI Workflow (`.github/workflows/ci.yml`)
+- **Purpose**: Pre-downloads all dependencies and runs tests in a single job
 - **Key Features**:
   - Installs yarn dependencies with `yarn install --frozen-lockfile`
   - Pre-downloads VS Code test binaries using `@vscode/test-electron`
   - Caches VS Code binaries across workflow runs
   - Builds and compiles the extension and tests
+  - Runs extension tests without network access to `update.code.visualstudio.com`
   - Runs linting to ensure code quality
 - **Triggers**: Push to main/copilot branches, PRs, manual dispatch
 
-#### Test Workflow (`.github/workflows/test.yml`)
-- **Purpose**: Runs tests using pre-downloaded dependencies
-- **Key Features**:
-  - Restores VS Code binaries from cache
-  - Runs extension tests without network access to `update.code.visualstudio.com`
-  - Validates setup workflow effectiveness
+#### Deprecated Workflows
+- **`.github/workflows/setup-deprecated.yml`**: Original setup-only workflow (deprecated due to cache sharing issues)
+- **`.github/workflows/test-deprecated.yml`**: Original test-only workflow (deprecated due to cache sharing issues)
 
 #### Firewall Issue Resolution
-The setup workflow specifically addresses the issue where `yarn run test` fails with:
+The CI workflow specifically addresses the issue where `yarn run test` fails with:
 ```
 getaddrinfo ENOTFOUND update.code.visualstudio.com
 ```
@@ -179,10 +177,12 @@ getaddrinfo ENOTFOUND update.code.visualstudio.com
 This happens because the VS Code testing framework (`@vscode/test-electron`) tries to download VS Code from `https://update.code.visualstudio.com/api/releases/stable` but gets blocked by firewall rules in isolated environments.
 
 The solution:
-1. Setup workflow runs **before** firewall is enabled
-2. Downloads VS Code to `.vscode-test/` directory  
+1. Combined CI workflow runs setup and tests in **single job** (not separate workflows)
+2. Downloads VS Code to `.vscode-test/` directory in the same job environment
 3. Caches the binaries for subsequent workflow runs
-4. Test workflow uses cached binaries instead of downloading
+4. Tests use the locally available binaries instead of downloading
+
+**Previous Issue**: Separate setup and test workflows failed due to GitHub Actions cache sharing limitations between different workflows. The test workflow couldn't access the cache populated by the setup workflow.
 
 ### Runtime Requirements
 - Positron version 2025.02.0-79 or later
@@ -252,13 +252,13 @@ The repository includes VS Code workspace configuration:
 - **Debugging**: Use VS Code debugger with launch configuration in `.vscode/launch.json`
 
 ### GitHub Actions Issues
-- **Setup workflow fails**: Check if `update.code.visualstudio.com` is accessible during workflow run
+- **CI workflow fails**: Check if `update.code.visualstudio.com` is accessible during workflow run
 - **VS Code download fails**: Verify `@vscode/test-electron` dependency is correctly installed
-- **Cache not working**: Check cache key in `.github/workflows/setup.yml` includes correct file hashes
-- **Tests fail after setup**: Ensure `.vscode-test` directory contains VS Code binaries
-- **Network access errors**: Ensure setup workflow runs before firewall restrictions are applied
+- **Cache not working**: Check cache key in `.github/workflows/ci.yml` includes correct file hashes
+- **Tests fail after setup**: Ensure `.vscode-test` directory contains VS Code binaries in the same job
+- **Network access errors**: Ensure VS Code download completes before firewall restrictions are applied
 
 ### Copilot Agent Environment
-- **ENOTFOUND errors**: Run setup workflow first to pre-download dependencies
-- **Testing failures**: Use cached VS Code binaries from setup workflow
-- **Build failures**: Ensure all yarn dependencies are installed by setup workflow
+- **ENOTFOUND errors**: Run CI workflow to pre-download dependencies in single job
+- **Testing failures**: Use CI workflow which ensures VS Code binaries are available
+- **Build failures**: Ensure all yarn dependencies are installed by CI workflow
