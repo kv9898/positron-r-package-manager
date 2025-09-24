@@ -150,6 +150,42 @@ The repository uses GitHub Actions for automated publishing:
 - **Build command in CI**: `yarn run package` (production build)
 - **Package command in CI**: `npx vsce package`
 
+### GitHub Actions Setup for Copilot Agent
+The repository includes a special setup workflow designed for GitHub Copilot's coding agent environment:
+
+#### Copilot Setup Steps (`.github/workflows/copilot-setup-steps.yml`)
+- **Purpose**: Pre-downloads all dependencies and runs tests in a single job for Copilot agent environment
+- **Required Name**: Must be named exactly `copilot-setup-steps.yml` for GitHub Copilot agent to recognize it
+- **Key Features**:
+  - Installs yarn dependencies with `yarn install --frozen-lockfile`
+  - Pre-downloads VS Code test binaries using `@vscode/test-electron`
+  - Caches VS Code binaries across workflow runs
+  - Builds and compiles the extension and tests
+  - Runs extension tests without network access to `update.code.visualstudio.com`
+  - Runs linting to ensure code quality
+- **Triggers**: Push to main/copilot branches, PRs, manual dispatch
+
+#### Deprecated Workflows
+- **`.github/workflows/setup-deprecated.yml`**: Original setup-only workflow (deprecated due to cache sharing issues)
+- **`.github/workflows/test-deprecated.yml`**: Original test-only workflow (deprecated due to cache sharing issues)
+
+#### Firewall Issue Resolution
+The Copilot setup workflow specifically addresses the issue where `yarn run test` fails with:
+```
+getaddrinfo ENOTFOUND update.code.visualstudio.com
+```
+
+This happens because the VS Code testing framework (`@vscode/test-electron`) tries to download VS Code from `https://update.code.visualstudio.com/api/releases/stable` but gets blocked by firewall rules in isolated environments.
+
+The solution:
+1. **Required naming**: Workflow must be named `copilot-setup-steps.yml` for GitHub Copilot agent to recognize it
+2. Combined setup workflow runs setup and tests in **single job** (not separate workflows)
+3. Downloads VS Code to `.vscode-test/` directory in the same job environment
+4. Caches the binaries for subsequent workflow runs
+5. Tests use the locally available binaries instead of downloading
+
+**Previous Issue**: Separate setup and test workflows failed due to GitHub Actions cache sharing limitations between different workflows. The test workflow couldn't access the cache populated by the setup workflow.
+
 ### Runtime Requirements
 - Positron version 2025.02.0-79 or later
 - VS Code extension host environment
@@ -216,3 +252,15 @@ The repository includes VS Code workspace configuration:
 - **Extension not loading**: Check `dist/extension.js` exists after build
 - **Changes not reflected**: Use F5 to reload Extension Development Host
 - **Debugging**: Use VS Code debugger with launch configuration in `.vscode/launch.json`
+
+### GitHub Actions Issues
+- **Copilot setup workflow fails**: Check if `update.code.visualstudio.com` is accessible during workflow run
+- **VS Code download fails**: Verify `@vscode/test-electron` dependency is correctly installed
+- **Cache not working**: Check cache key in `.github/workflows/copilot-setup-steps.yml` includes correct file hashes
+- **Tests fail after setup**: Ensure `.vscode-test` directory contains VS Code binaries in the same job
+- **Network access errors**: Ensure VS Code download completes before firewall restrictions are applied
+
+### Copilot Agent Environment
+- **ENOTFOUND errors**: Run copilot-setup-steps workflow to pre-download dependencies in single job
+- **Testing failures**: Use copilot-setup-steps workflow which ensures VS Code binaries are available
+- **Build failures**: Ensure all yarn dependencies are installed by copilot-setup-steps workflow
