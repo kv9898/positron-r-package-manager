@@ -1,4 +1,8 @@
-name: Test Extension
+# DEPRECATED: This workflow fails because it can't reliably access the cache
+# created by the separate setup workflow. Use ci.yml instead which combines
+# setup and testing in a single job.
+
+name: Test Extension (DEPRECATED)
 
 on:
   workflow_dispatch:

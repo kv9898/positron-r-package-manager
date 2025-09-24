@@ -1,4 +1,8 @@
-name: Setup for Copilot Agent
+# DEPRECATED: This workflow doesn't work reliably because GitHub Actions cache 
+# sharing between separate workflows is limited. Use ci.yml instead which 
+# combines setup and testing in a single job.
+
+name: Setup for Copilot Agent (DEPRECATED)
 
 on:
   workflow_dispatch:
