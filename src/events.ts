@@ -33,3 +33,25 @@ export function getChangeForegroundEvent(): vscode.Disposable {
 
     return ChangeForegroundEvent;
 }
+
+/**
+ * Returns a disposable that listens for R code execution events related to package loading or unloading.
+ * 
+ * When the user executes R code that includes `library()`, `require()`, `pacman::p_load()`, or `detach()`,
+ * this event handler waits briefly and then triggers a refresh of the R package list in the sidebar.
+ * 
+ * @returns {vscode.Disposable} A disposable that unregisters the event listener.
+ */
+export function getLoadLibraryEvent(): vscode.Disposable {
+    const LoadLibraryEvent = positron.runtime.onDidExecuteCode(event => {
+        if (event.languageId !== 'r') { return; };
+        if (event.code.includes('library(') || event.code.includes('require(') || event.code.includes('pacman::p_load(') || event.code.includes('detach(')) {
+            // wait a moment to ensure the package is loaded
+            setTimeout(() => {
+                vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
+            }, 500);
+        };
+    });
+
+    return LoadLibraryEvent;
+}
