@@ -1,4 +1,7 @@
-name: CI - Setup and Test
+# GitHub Copilot Agent Setup Steps
+# This workflow is specifically named "copilot-setup-steps.yml" as required by
+# GitHub Copilot agent to run environment setup before firewall restrictions.
+name: Copilot Setup Steps
 
 on:
   workflow_dispatch:
@@ -11,8 +14,8 @@ on:
       - main
 
 jobs:
-  ci:
-    name: 🚀 Setup Dependencies and Run Tests
+  copilot-setup:
+    name: 🚀 Copilot Environment Setup and Validation
     runs-on: ubuntu-latest
     
     steps:
