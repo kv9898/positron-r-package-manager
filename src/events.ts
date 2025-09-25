@@ -45,7 +45,7 @@ export function getChangeForegroundEvent(): vscode.Disposable {
 export function getLoadLibraryEvent(): vscode.Disposable {
     const LoadLibraryEvent = positron.runtime.onDidExecuteCode(event => {
         if (event.languageId !== 'r') { return; };
-        if (event.code.includes('library(') || event.code.includes('require(') || event.code.includes('pacman::p_load(') || event.code.includes('detach(')) {
+        if (event.code.includes('library(') || event.code.includes('require(') || event.code.includes('p_load(') || event.code.includes('detach(')) {
             // wait a moment to ensure the package is loaded
             setTimeout(() => {
                 vscode.commands.executeCommand("positron-r-package-manager.refreshPackages");
