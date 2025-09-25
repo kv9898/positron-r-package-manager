@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.2.0
+
+- Extension now automatically refreshes the package list when R code loads or unloads a package (library(), require(), pacman::p_load(), detach()).
+
 ## 0.1.6
 - Fixed compilation prompt appearing multiple times during package updates with native installer
 - Package updates now group packages by library path to reduce installation prompts
