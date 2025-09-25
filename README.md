@@ -102,7 +102,7 @@ You can access these from the sidebar or Command Palette:
 
 ## ⚠️ Known Issues
 
-- Packages installed or detached manually via console are not immediately reflected — use **Refresh** to sync.
+- Packages installed manually via console are not immediately reflected — use **Refresh** to sync.
 
 ---
 
