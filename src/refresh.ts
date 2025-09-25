@@ -54,6 +54,74 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
               tryCatch(dirname(getNamespaceInfo(pkg, "path")), error = function(e) NA_character_)
             }, character(1), USE.NAMES = TRUE)
 
+            # Create a more robust loading check that handles renv and symlinks
+            loaded_status <- vapply(pkgs[, "Package"], function(pkg_name) {
+              if (!pkg_name %in% names(loaded_paths)) return(FALSE)
+              
+              loaded_path <- loaded_paths[pkg_name]
+              if (is.na(loaded_path)) return(FALSE)
+              
+              # Normalize both paths for comparison
+              norm_loaded <- normalizePath(loaded_path, winslash = "/", mustWork = FALSE)
+              norm_lib <- normalizePath(lib, winslash = "/", mustWork = FALSE)
+              
+              # Direct path match (works for most standard cases)
+              if (norm_loaded == norm_lib) return(TRUE)
+              
+              # Check if the loaded path is a subdirectory of the library path
+              # This handles cases where packages are in nested structures
+              if (startsWith(norm_loaded, paste0(norm_lib, "/")) || startsWith(norm_loaded, paste0(norm_lib, "\\"))) return(TRUE)
+              
+              # Check if the library path is a subdirectory of the loaded path
+              # This handles cases where library points to a subdirectory of where package is actually loaded
+              if (startsWith(norm_lib, paste0(norm_loaded, "/")) || startsWith(norm_lib, paste0(norm_loaded, "\\"))) return(TRUE)
+              
+              # Special handling for renv environments
+              if (grepl("renv", norm_loaded, fixed = TRUE) && grepl("renv", norm_lib, fixed = TRUE)) {
+                # Both paths contain renv, let's do a more sophisticated comparison
+                
+                # Split paths and find common segments
+                loaded_parts <- strsplit(norm_loaded, "[/\\\\]")[[1]]
+                lib_parts <- strsplit(norm_lib, "[/\\\\]")[[1]]
+                
+                # Find renv positions in both paths
+                renv_pos_loaded <- which(loaded_parts == "renv")
+                renv_pos_lib <- which(lib_parts == "renv")
+                
+                if (length(renv_pos_loaded) > 0 && length(renv_pos_lib) > 0) {
+                  # Compare the project paths (parts before renv)
+                  project_loaded <- paste(loaded_parts[1:(renv_pos_loaded[1]-1)], collapse = "/")
+                  project_lib <- paste(lib_parts[1:(renv_pos_lib[1]-1)], collapse = "/")
+                  
+                  # If they are from the same renv project, the package is likely loaded from this library
+                  if (project_loaded == project_lib) return(TRUE)
+                }
+                
+                # Fallback: if both are renv paths and contain the package name, consider it loaded
+                if (grepl(pkg_name, norm_loaded, fixed = TRUE)) return(TRUE)
+              }
+              
+              # Additional check for complex symlink scenarios
+              # Use realpath-like logic by checking if the paths resolve to the same location
+              tryCatch({
+                # This is a more expensive check, so we do it last
+                real_loaded <- Sys.readlink(loaded_path)
+                real_lib <- Sys.readlink(lib)
+                
+                if (!is.na(real_loaded) && !is.na(real_lib)) {
+                  if (normalizePath(dirname(real_loaded), winslash = "/", mustWork = FALSE) == 
+                      normalizePath(real_lib, winslash = "/", mustWork = FALSE)) {
+                    return(TRUE)
+                  }
+                }
+              }, error = function(e) {
+                # Ignore errors from readlink - not all systems support it
+              })
+              
+              # If none of the above match, the package is likely loaded from a different library
+              return(FALSE)
+            }, logical(1))
+
             df <- data.frame(
               Package = pkgs[, "Package"],
               Version = pkgs[, "Version"],
@@ -61,7 +129,7 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
               LocationType = if (normalizePath(lib, winslash = "/", mustWork = FALSE) %in%
                                    normalizePath(.Library, winslash = "/", mustWork = FALSE)) "System" else "User",
               Title = titles,
-              Loaded = pkgs[, "Package"] %in% names(loaded_paths) & loaded_paths[pkgs[, "Package"]] == lib,
+              Loaded = loaded_status,
               stringsAsFactors = FALSE
             )
 
