@@ -6,7 +6,7 @@ import { refreshPackages } from './refresh';
 import { SidebarProvider, RPackageItem } from './sidebar';
 import { installPackages } from './install';
 import { uninstallPackage, updatePackages } from './update-uninstall';
-import { getChangeForegroundEvent } from './events';
+import { getChangeForegroundEvent, getLoadLibraryEvent } from './events';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -23,6 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
 	const changeForegroundEvent = getChangeForegroundEvent();
 	context.subscriptions.push(changeForegroundEvent);
 
+	// Refresh the package list upon package loading/unloading
+	const loadLibraryEvent = getLoadLibraryEvent();
+	context.subscriptions.push(loadLibraryEvent);
+
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "positron-r-package-manager" sees its sidebar refreshed!');
@@ -30,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('positron-r-package-manager.refreshPackages', async () => {
 		// const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
 
-		const hasR  = await positron.runtime.getActiveSessions().then((sessions) => sessions.some((session) => session.runtimeMetadata.languageId === 'r'));
+		const hasR = await positron.runtime.getActiveSessions().then((sessions) => sessions.some((session) => session.runtimeMetadata.languageId === 'r'));
 		if (!hasR) {
 			vscode.window.showWarningMessage(
 				vscode.l10n.t('No active R console session available. Please start one.')
