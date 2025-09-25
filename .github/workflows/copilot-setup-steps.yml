@@ -6,16 +6,17 @@ name: Copilot Setup Steps
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - 'copilot/**'
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - .github/copilot-instructions.md
   pull_request:
-    branches:
-      - main
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - .github/copilot-instructions.md
 
 jobs:
-  copilot-setup:
-    name: 🚀 Copilot Environment Setup and Validation
+  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  copilot-setup-steps:
     runs-on: ubuntu-latest
     
     steps:
