@@ -54,14 +54,21 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
               tryCatch(dirname(getNamespaceInfo(pkg, "path")), error = function(e) NA_character_)
             }, character(1), USE.NAMES = TRUE)
 
+            # Normalize paths for comparison to handle renv and symlinks
+            normalized_lib <- normalizePath(lib, winslash = "/", mustWork = FALSE)
+            normalized_loaded_paths <- vapply(loaded_paths, function(p) {
+              if (is.na(p)) return(NA_character_)
+              normalizePath(p, winslash = "/", mustWork = FALSE)
+            }, character(1))
+
             df <- data.frame(
               Package = pkgs[, "Package"],
               Version = pkgs[, "Version"],
               LibPath = lib,
-              LocationType = if (normalizePath(lib, winslash = "/", mustWork = FALSE) %in%
+              LocationType = if (normalized_lib %in%
                                    normalizePath(.Library, winslash = "/", mustWork = FALSE)) "System" else "User",
               Title = titles,
-              Loaded = pkgs[, "Package"] %in% names(loaded_paths) & loaded_paths[pkgs[, "Package"]] == lib,
+              Loaded = pkgs[, "Package"] %in% names(loaded_paths) & normalized_loaded_paths[pkgs[, "Package"]] == normalized_lib,
               stringsAsFactors = FALSE
             )
 
