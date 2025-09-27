@@ -31,7 +31,7 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
   }
 
   // vscode.window.showInformationMessage("Proper refresh starts"); // For Debugging
-  
+
   // Execute R code to dump package information
   const tmpPath = path.join(os.tmpdir(), `r_packages_${Date.now()}.json`);
   const rTmpPath = tmpPath.replace(/\\/g, '/');
@@ -51,17 +51,33 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
             }, character(1))
 
             loaded_paths <- vapply(loadedNamespaces(), function(pkg) {
-              tryCatch(dirname(getNamespaceInfo(pkg, "path")), error = function(e) NA_character_)
+              tryCatch(getNamespaceInfo(pkg, "path"), error = function(e) NA_character_)
+            }, character(1), USE.NAMES = TRUE)
+
+            # Normalize paths for comparison to handle renv caches and symlinks
+            normalized_lib <- normalizePath(lib, winslash = "/", mustWork = FALSE)
+            normalized_loaded_paths <- vapply(loaded_paths, function(p) {
+              if (is.na(p)) return(NA_character_)
+              normalizePath(p, winslash = "/", mustWork = FALSE)
+            }, character(1))
+
+            # Expected package paths within this library (may resolve to cache via symlinks)
+            expected_pkg_paths <- vapply(pkgs[, "Package"], function(p) {
+              normalizePath(file.path(lib, p), winslash = "/", mustWork = FALSE)
             }, character(1), USE.NAMES = TRUE)
 
             df <- data.frame(
               Package = pkgs[, "Package"],
               Version = pkgs[, "Version"],
               LibPath = lib,
-              LocationType = if (normalizePath(lib, winslash = "/", mustWork = FALSE) %in%
+              LocationType = if (normalized_lib %in%
                                    normalizePath(.Library, winslash = "/", mustWork = FALSE)) "System" else "User",
               Title = titles,
-              Loaded = pkgs[, "Package"] %in% names(loaded_paths) & loaded_paths[pkgs[, "Package"]] == lib,
+              Loaded = {
+                pkg_names <- pkgs[, "Package"]
+                cmp <- normalized_loaded_paths[pkg_names] == expected_pkg_paths[pkg_names]
+                !is.na(cmp) & cmp
+              },
               stringsAsFactors = FALSE
             )
 
