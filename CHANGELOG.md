@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.2.1
+
+- Fixed an issue where the loaded packages would not display correctly when renv is used on Linux/MacOS.
+
 ## 0.2.0
 
 - Extension now automatically refreshes the package list when R code loads or unloads a package (library(), require(), pacman::p_load(), detach()).
