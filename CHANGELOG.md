@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.2.2
+
+- Removed the package-list refresh delay. It was a workaround for a Positron bug that displayed queued silent code, fixed in [#9772](https://github.com/posit-dev/positron/pull/9772).
+
 ## 0.2.1
 
 - Fixed an issue where the loaded packages would not display correctly when renv is used on Linux/MacOS.
