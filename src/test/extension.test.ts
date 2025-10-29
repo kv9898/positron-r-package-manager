@@ -66,4 +66,14 @@ suite('Extension Test Suite', () => {
 			assert.strictEqual(paddedVersions[i].trimEnd(), v);
 		});
 	});
+
+	test('SidebarProvider handles empty packages array', () => {
+		const sidebarProvider = new SidebarProvider();
+		
+		const packages: RPackageInfo[] = [];
+		sidebarProvider.refresh(packages);
+		
+		// Should default to 0 for empty array
+		assert.strictEqual(sidebarProvider.getMaxVersionLength(), 0);
+	});
 });
