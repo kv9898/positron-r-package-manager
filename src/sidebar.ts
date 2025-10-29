@@ -164,14 +164,12 @@ export class RPackageItem extends vscode.TreeItem {
     constructor(public pkg: RPackageInfo, maxNameLength: number = 0, maxVersionLength: number = 0) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
-        // Get location badge
+        // Get location badge\
         const locationBadge = this.getLocationBadge(pkg.locationtype);
 
-        // Pad version string to align with longest version
-        const paddedVersion = pkg.version.padEnd(maxVersionLength, ' ');
-
-        // Build enhanced description with badges
-        this.description = `${paddedVersion} • ${locationBadge.emoji} ${locationBadge.label}`;
+        const constrainedNameLength = Math.min(pkg.name.length, maxNameLength);
+        const spacingWidth = Math.max(1, maxNameLength - constrainedNameLength + 1);
+        const paddedVersion = `${'\u2007'.repeat(spacingWidth)}${pkg.version.padEnd(maxVersionLength, '\u2007')}`;
 
         this.contextValue = 'rPackage';
 
