@@ -21,6 +21,7 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
     readonly onDidChangeTreeData: vscode.Event<RPackageItem | undefined | void> = this._onDidChangeTreeData.event;
 
     private packages: RPackageInfo[] = [];
+    private maxNameLength: number = 0;
     private maxVersionLength: number = 0;
 
     /**
@@ -29,8 +30,9 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
      */
     refresh(packages: RPackageInfo[]): void {
         this.packages = packages;
-        // Calculate the maximum version length for alignment
+        // Calculate the maximum lengths for alignment
         this.maxVersionLength = packages.reduce((max, pkg) => Math.max(max, pkg.version.length), 0);
+        this.maxNameLength = packages.reduce((max, pkg) => Math.max(max, pkg.name.length), 0);
         this._onDidChangeTreeData.fire();
     }
 
@@ -80,7 +82,7 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
             ]);
         }
 
-        return Promise.resolve(filtered.map(pkg => new RPackageItem(pkg, this.maxVersionLength)));
+        return Promise.resolve(filtered.map(pkg => new RPackageItem(pkg, this.maxNameLength, this.maxVersionLength)));
     }
 
     /**
@@ -137,8 +139,8 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
      * Gets the maximum version length for alignment purposes.
      * @returns The maximum version length among all packages.
      */
-    getMaxVersionLength(): number {
-        return this.maxVersionLength;
+    getMaxLengths(): [number, number] {
+        return [this.maxNameLength, this.maxVersionLength];
     }
 
     toggleShowOnlyLoadedPackages() {
@@ -151,9 +153,10 @@ export class RPackageItem extends vscode.TreeItem {
     /**
      * Creates a new RPackageItem representing an R package in the Positron tree view.
      * @param pkg The RPackageInfo object describing the package.
+     * @param maxNameLength The maximum name string length for alignment purposes.
      * @param maxVersionLength The maximum version string length for alignment purposes.
      */
-    constructor(public pkg: RPackageInfo, maxVersionLength: number = 0) {
+    constructor(public pkg: RPackageInfo, maxNameLength: number = 0, maxVersionLength: number = 0) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
         // Get location badge
