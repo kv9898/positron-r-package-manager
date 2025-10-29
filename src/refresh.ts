@@ -70,8 +70,16 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
               Package = pkgs[, "Package"],
               Version = pkgs[, "Version"],
               LibPath = lib,
-              LocationType = if (normalized_lib %in%
-                                   normalizePath(.Library, winslash = "/", mustWork = FALSE)) "System" else "User",
+              LocationType = {
+                # Check if library path is in an renv project (library, sandbox, or cache)
+                if (grepl("/renv/", normalized_lib, fixed = TRUE) || grepl("\\\\renv\\\\", normalized_lib, fixed = TRUE)) {
+                  "renv"
+                } else if (normalized_lib %in% normalizePath(.Library, winslash = "/", mustWork = FALSE)) {
+                  "System"
+                } else {
+                  "User"
+                }
+              },
               Title = titles,
               Loaded = {
                 pkg_names <- pkgs[, "Package"]

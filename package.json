@@ -2,7 +2,7 @@
   "name": "positron-r-package-manager",
   "displayName": "%display.name%",
   "description": "%description%",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": "kv9898",
   "repository": {
     "type": "git",
@@ -49,11 +49,14 @@
           "default": false,
           "description": "%showRIcon%"
         },
-        "positron-r-package-manager.defaultInstaller" :{
+        "positron-r-package-manager.defaultInstaller": {
           "type": "string",
           "scope": "resource",
           "default": "native",
-          "enum": ["native", "pak"],
+          "enum": [
+            "native",
+            "pak"
+          ],
           "enumDescriptions": [
             "%defaultInstaller::native%",
             "%defaultInstaller::pak%"

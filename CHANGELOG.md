@@ -2,6 +2,11 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file.
 
+## 0.2.3
+
+- Show renv when used: The extension now detects and displays packages managed by renv in addition to the global library, ensuring a comprehensive view of all installed packages in your R environment.
+- Enhance tooltip display
+
 ## 0.2.2
 
 - Removed the package-list refresh delay. It was a workaround for a Positron bug that displayed queued silent code, fixed in [#9772](https://github.com/posit-dev/positron/pull/9772).
@@ -15,14 +20,17 @@ All notable changes to the "positron-r-package-manager" extension will be docume
 - Extension now automatically refreshes the package list when R code loads or unloads a package (library(), require(), pacman::p_load(), detach()).
 
 ## 0.1.6
+
 - Fixed compilation prompt appearing multiple times during package updates with native installer
 - Package updates now group packages by library path to reduce installation prompts
 
 ## 0.1.5
-- Add checks for library path writability before attempting package installations or updates, 
+
+- Add checks for library path writability before attempting package installations or updates,
   to prevent errors when using non-writable directories.
 
 ## 0.1.4
+
 - Stopped `pak` from asking to install packages that are already installed
 - Parallelised package updates with `pak` for faster execution
 
