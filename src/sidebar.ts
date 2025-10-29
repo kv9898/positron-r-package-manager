@@ -33,6 +33,11 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
         // Calculate the maximum lengths for alignment
         this.maxVersionLength = packages.reduce((max, pkg) => Math.max(max, pkg.version.length), 0);
         this.maxNameLength = packages.reduce((max, pkg) => Math.max(max, pkg.name.length), 0);
+
+        // Restrict the maximum lengths to reasonable values to avoid excessive padding
+        this.maxNameLength = Math.min(this.maxNameLength, 10);
+        this.maxVersionLength = Math.min(this.maxVersionLength, 10);
+
         this._onDidChangeTreeData.fire();
     }
 
