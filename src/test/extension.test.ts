@@ -16,7 +16,7 @@ suite('Extension Test Suite', () => {
 
 	test('SidebarProvider calculates max version length correctly', () => {
 		const sidebarProvider = new SidebarProvider();
-		
+
 		const packages: RPackageInfo[] = [
 			{
 				name: 'pkg1',
@@ -45,22 +45,22 @@ suite('Extension Test Suite', () => {
 		];
 
 		sidebarProvider.refresh(packages);
-		
+
 		// The longest version is '2.15.3' with length 6
-		assert.strictEqual(sidebarProvider.getMaxVersionLength(), 6);
+		assert.strictEqual(sidebarProvider.getMaxLengths(), [4, 6]);
 	});
 
 	test('Version padding creates consistent length strings', () => {
 		const versions = ['1.0', '2.15.3', '0.1', '1.2-15'];
 		const maxLength = Math.max(...versions.map(v => v.length));
-		
+
 		const paddedVersions = versions.map(v => v.padEnd(maxLength, ' '));
-		
+
 		// All padded versions should have the same length
 		paddedVersions.forEach(pv => {
 			assert.strictEqual(pv.length, maxLength);
 		});
-		
+
 		// Verify padding doesn't modify content (only adds spaces)
 		versions.forEach((v, i) => {
 			assert.strictEqual(paddedVersions[i].trimEnd(), v);
@@ -69,11 +69,11 @@ suite('Extension Test Suite', () => {
 
 	test('SidebarProvider handles empty packages array', () => {
 		const sidebarProvider = new SidebarProvider();
-		
+
 		const packages: RPackageInfo[] = [];
 		sidebarProvider.refresh(packages);
-		
+
 		// Should default to 0 for empty array
-		assert.strictEqual(sidebarProvider.getMaxVersionLength(), 0);
+		assert.strictEqual(sidebarProvider.getMaxLengths(), [0, 0]);
 	});
 });
