@@ -72,9 +72,9 @@ This extension provides the following setting:
   _(boolean, default: `true`)_  
   When enabled, filters out outdated R packages if an up-to-date version exists in another library during updates. This helps ruling out package installations that are not updatable in their current locations.
 
-- `positron-r-package-manager.showRIcon`
+- `positron-r-package-manager.showIcons`
   _(boolean, default: false)_
-  When enabled, displays a small R logo next to each package in the sidebar to visually indicate package entries.
+  When enabled, displays a small R logo and a package type icon next to each package in the sidebar to visually indicate package entries.
 
 - `positron-r-package-manager.defaultInstaller`
   _(string, default: `"native"`)_

@@ -3,7 +3,7 @@ import * as positron from 'positron';
 import * as path from 'path';
 import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
-import { getShowRIcon } from './utils';
+import { getShowIcons } from './utils';
 
 export interface RPackageInfo {
     name: string;
@@ -144,12 +144,15 @@ export class RPackageItem extends vscode.TreeItem {
     constructor(public pkg: RPackageInfo) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
-        this.description = `${pkg.version} (${pkg.locationtype})`;
-        this.tooltip = `${pkg.title}\n(${pkg.libpath})`;
+        // Get location badge
+        const locationBadge = this.getLocationBadge(pkg.locationtype);
+
+        // Build enhanced description with badges
+        this.description = `${pkg.version} • ${locationBadge.emoji} ${locationBadge.label}`;
 
         this.contextValue = 'rPackage';
 
-        if (getShowRIcon()) {
+        if (getShowIcons()) {
             this.iconPath = {
                 light: vscode.Uri.file(
                     path.join(__dirname, '..', 'resources', 'r_logo.svg')
@@ -158,8 +161,38 @@ export class RPackageItem extends vscode.TreeItem {
                     path.join(__dirname, '..', 'resources', 'r_logo.svg')
                 ),
             };
+            this.description = `${pkg.version} ${locationBadge.emoji} ${locationBadge.label}`;
+        } else {
+            this.description = `${pkg.version} ${locationBadge.label}`;
         }
 
+        // Build enhanced tooltip with markdown
+        const tooltipContent = new vscode.MarkdownString();
+        tooltipContent.appendMarkdown(`## ${pkg.name} v${pkg.version}\n\n`);
+
+        if (pkg.title) {
+            tooltipContent.appendMarkdown(`*${pkg.title}*\n\n`);
+        }
+
+        tooltipContent.appendMarkdown(`---\n\n`);
+        tooltipContent.appendMarkdown(
+            `**Location:** ${locationBadge.emoji} ${locationBadge.label}\n\n`
+        );
+        tooltipContent.appendMarkdown(`**Path:** \`${pkg.libpath}\`\n\n`);
+
+        if (pkg.loaded) {
+            tooltipContent.appendMarkdown(`**Status:** ✅ Loaded\n\n`);
+        }
+
+        tooltipContent.appendMarkdown(`---\n\n`);
+        tooltipContent.appendMarkdown(
+            `[View Documentation](command:positron-r-package-manager.openHelp?${encodeURIComponent(
+                JSON.stringify([pkg.name])
+            )})`
+        );
+
+        tooltipContent.isTrusted = true;
+        this.tooltip = tooltipContent;
 
         this.checkboxState = pkg.loaded
             ? vscode.TreeItemCheckboxState.Checked
@@ -170,6 +203,24 @@ export class RPackageItem extends vscode.TreeItem {
             title: vscode.l10n.t('Open Package Help'),
             arguments: [pkg.name],
         };
+    }
+
+    private getLocationBadge(locationType: string): {
+        emoji: string;
+        label: string;
+    } {
+        const type = locationType.toLowerCase();
+        if (type.includes('renv')) {
+            return { emoji: '📚', label: 'renv' };
+        } else if (type.includes('global') || type.includes('system')) {
+            return { emoji: '🌐', label: 'System' };
+        } else if (type.includes('user')) {
+            return { emoji: '📦', label: 'User' };
+        } else if (type.includes('dev') || type.includes('development')) {
+            return { emoji: '🔧', label: 'Dev' };
+            // TODO: We currently do not detect dev libraries in R.
+        }
+        return { emoji: '📂', label: locationType };
     }
 }
 
