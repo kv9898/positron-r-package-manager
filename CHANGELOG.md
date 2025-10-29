@@ -6,6 +6,7 @@ All notable changes to the "positron-r-package-manager" extension will be docume
 
 - Added renv and de as a library location.
 - Enhanced tooltip display.
+- Imperfectly align package information in the sidebar for better readability.
 
 ## 0.2.2
 
