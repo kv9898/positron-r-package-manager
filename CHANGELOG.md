@@ -4,8 +4,8 @@ All notable changes to the "positron-r-package-manager" extension will be docume
 
 ## 0.2.3
 
-- Show renv when used: The extension now detects and displays packages managed by renv in addition to the global library, ensuring a comprehensive view of all installed packages in your R environment.
-- Enhance tooltip display
+- Added renv and de as a library location.
+- Enhanced tooltip display.
 
 ## 0.2.2
 
