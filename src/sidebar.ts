@@ -21,6 +21,8 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
     readonly onDidChangeTreeData: vscode.Event<RPackageItem | undefined | void> = this._onDidChangeTreeData.event;
 
     private packages: RPackageInfo[] = [];
+    private maxNameLength: number = 0;
+    private maxVersionLength: number = 0;
 
     /**
      * Refresh the package list with the given data. This function is meant to be called from the refreshPackages function in the refresh module.
@@ -28,6 +30,14 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
      */
     refresh(packages: RPackageInfo[]): void {
         this.packages = packages;
+        // Calculate the maximum lengths for alignment
+        this.maxVersionLength = packages.reduce((max, pkg) => Math.max(max, pkg.version.length), 0);
+        this.maxNameLength = packages.reduce((max, pkg) => Math.max(max, pkg.name.length), 0);
+
+        // Restrict the maximum lengths to reasonable values to avoid excessive padding
+        this.maxNameLength = Math.min(this.maxNameLength, 10);
+        this.maxVersionLength = Math.min(this.maxVersionLength, 10);
+
         this._onDidChangeTreeData.fire();
     }
 
@@ -77,7 +87,7 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
             ]);
         }
 
-        return Promise.resolve(filtered.map(pkg => new RPackageItem(pkg)));
+        return Promise.resolve(filtered.map(pkg => new RPackageItem(pkg, this.maxNameLength, this.maxVersionLength)));
     }
 
     /**
@@ -130,6 +140,14 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
         return this.packages;
     }
 
+    /**
+     * Gets the maximum version length for alignment purposes.
+     * @returns The maximum version length among all packages.
+     */
+    getMaxLengths(): [number, number] {
+        return [this.maxNameLength, this.maxVersionLength];
+    }
+
     toggleShowOnlyLoadedPackages() {
         this.showOnlyLoadedPackages = !this.showOnlyLoadedPackages;
         this._onDidChangeTreeData.fire(); // Refresh the tree
@@ -140,15 +158,18 @@ export class RPackageItem extends vscode.TreeItem {
     /**
      * Creates a new RPackageItem representing an R package in the Positron tree view.
      * @param pkg The RPackageInfo object describing the package.
+     * @param maxNameLength The maximum name string length for alignment purposes.
+     * @param maxVersionLength The maximum version string length for alignment purposes.
      */
-    constructor(public pkg: RPackageInfo) {
+    constructor(public pkg: RPackageInfo, maxNameLength: number = 0, maxVersionLength: number = 0) {
         super(pkg.name, vscode.TreeItemCollapsibleState.None);
 
-        // Get location badge
+        // Get location badge\
         const locationBadge = this.getLocationBadge(pkg.locationtype);
 
-        // Build enhanced description with badges
-        this.description = `${pkg.version} • ${locationBadge.emoji} ${locationBadge.label}`;
+        const constrainedNameLength = Math.min(pkg.name.length, maxNameLength);
+        const spacingWidth = Math.max(1, maxNameLength - constrainedNameLength + 1);
+        const paddedVersion = `${'\u2007'.repeat(spacingWidth)}${pkg.version.padEnd(maxVersionLength, '\u2007')}`;
 
         this.contextValue = 'rPackage';
 
@@ -161,9 +182,9 @@ export class RPackageItem extends vscode.TreeItem {
                     path.join(__dirname, '..', 'resources', 'r_logo.svg')
                 ),
             };
-            this.description = `${pkg.version} ${locationBadge.emoji} ${locationBadge.label}`;
+            this.description = `${paddedVersion} ${locationBadge.emoji} ${locationBadge.label}`;
         } else {
-            this.description = `${pkg.version} ${locationBadge.label}`;
+            this.description = `${paddedVersion} ${locationBadge.label}`;
         }
 
         // Build enhanced tooltip with markdown
