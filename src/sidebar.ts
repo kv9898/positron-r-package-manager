@@ -186,7 +186,7 @@ export class RPackageItem extends vscode.TreeItem {
 
         tooltipContent.appendMarkdown(`---\n\n`);
         tooltipContent.appendMarkdown(
-            `[📚 View Documentation](command:positron-r-package-manager.openHelp?${encodeURIComponent(
+            `[View Documentation](command:positron-r-package-manager.openHelp?${encodeURIComponent(
                 JSON.stringify([pkg.name])
             )})`
         );
