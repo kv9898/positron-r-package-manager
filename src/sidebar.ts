@@ -161,6 +161,9 @@ export class RPackageItem extends vscode.TreeItem {
                     path.join(__dirname, '..', 'resources', 'r_logo.svg')
                 ),
             };
+            this.description = `${pkg.version} ${locationBadge.emoji} ${locationBadge.label}`;
+        } else {
+            this.description = `${pkg.version} ${locationBadge.label}`;
         }
 
         // Build enhanced tooltip with markdown
