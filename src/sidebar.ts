@@ -218,6 +218,7 @@ export class RPackageItem extends vscode.TreeItem {
             return { emoji: '📦', label: 'User' };
         } else if (type.includes('dev') || type.includes('development')) {
             return { emoji: '🔧', label: 'Dev' };
+            // TODO: We currently do not detect dev libraries in R.
         }
         return { emoji: '📂', label: locationType };
     }
