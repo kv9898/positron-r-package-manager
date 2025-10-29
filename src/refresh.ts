@@ -72,7 +72,7 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
               LibPath = lib,
               LocationType = {
                 # Check if library path is in an renv project (library, sandbox, or cache)
-                if (grepl("/renv/", normalized_lib, fixed = TRUE) || grepl("\\\\renv\\\\", normalized_lib, fixed = TRUE)) {
+                if (grepl("/renv/", normalized_lib, fixed = TRUE)) {
                   "renv"
                 } else if (normalized_lib %in% normalizePath(.Library, winslash = "/", mustWork = FALSE)) {
                   "System"
