@@ -188,8 +188,8 @@ export class RPackageItem extends vscode.TreeItem {
             )})`
         );
 
-        this.tooltip = tooltipContent;
         tooltipContent.isTrusted = true;
+        this.tooltip = tooltipContent;
 
         this.checkboxState = pkg.loaded
             ? vscode.TreeItemCheckboxState.Checked
