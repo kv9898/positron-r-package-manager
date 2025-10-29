@@ -3,7 +3,7 @@ import * as positron from 'positron';
 import * as path from 'path';
 import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
-import { getShowRIcon } from './utils';
+import { getShowIcons } from './utils';
 
 export interface RPackageInfo {
     name: string;
@@ -152,7 +152,7 @@ export class RPackageItem extends vscode.TreeItem {
 
         this.contextValue = 'rPackage';
 
-        if (getShowRIcon()) {
+        if (getShowIcons()) {
             this.iconPath = {
                 light: vscode.Uri.file(
                     path.join(__dirname, '..', 'resources', 'r_logo.svg')

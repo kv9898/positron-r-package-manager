@@ -30,16 +30,16 @@ export function getFilterRedundant(): boolean {
 }
 
 /**
- * Gets the configuration value of `showRIcon`.
+ * Gets the configuration value of `showIcons`.
  *
- * If true, the extension will display a small R logo next to each package in the sidebar to
+ * If true, the extension will display a small R logo and a package location type icon next to each package in the sidebar to
  * visually indicate package entries.
  *
  * @returns The value of the configuration setting.
  */
-export function getShowRIcon(): boolean {
+export function getShowIcons(): boolean {
     const config = vscode.workspace.getConfiguration('positron-r-package-manager');
-    return config.get<boolean>('showRIcon', false);
+    return config.get<boolean>('showIcons', false);
 }
 
 /**

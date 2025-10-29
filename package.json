@@ -43,11 +43,11 @@
           "default": true,
           "description": "%filterOutdatedIfUpToDateElsewhere%"
         },
-        "positron-r-package-manager.showRIcon": {
+        "positron-r-package-manager.showIcons": {
           "type": "boolean",
           "scope": "application",
           "default": false,
-          "description": "%showRIcon%"
+          "description": "%showIcons%"
         },
         "positron-r-package-manager.defaultInstaller": {
           "type": "string",
