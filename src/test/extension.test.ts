@@ -106,7 +106,7 @@ suite('Utils Test Suite', () => {
 			const result = isLibPathWriteable(tempDir);
 			assert.strictEqual(result, true);
 		} finally {
-			fs.rmdirSync(tempDir);
+			fs.rmSync(tempDir, { recursive: true });
 		}
 	});
 
