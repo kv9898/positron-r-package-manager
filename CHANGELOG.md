@@ -1,24 +1,24 @@
 # Change Log
 
-All notable changes to the "positron-r-package-manager" extension will be documented in this file.
+All notable changes to the "positron-r-package-manager" extension will be documented in this file
 
 ## 0.2.3
 
-- Added renv and de as a library location.
-- Enhanced tooltip display.
-- Imperfectly align package information in the sidebar for better readability.
+- Added renv and dev as a library location (@ntluong95)
+- Enhanced tooltip display (@ntluong95)
+- Imperfectly align package information in the sidebar for better readability
 
 ## 0.2.2
 
-- Removed the package-list refresh delay. It was a workaround for a Positron bug that displayed queued silent code, fixed in [#9772](https://github.com/posit-dev/positron/pull/9772).
+- Removed the package-list refresh delay. It was a workaround for a Positron bug that displayed queued silent code, fixed in [#9772](https://github.com/posit-dev/positron/pull/9772)
 
 ## 0.2.1
 
-- Fixed an issue where the loaded packages would not display correctly when renv is used on Linux/MacOS.
+- Fixed an issue where the loaded packages would not display correctly when renv is used on Linux/MacOS
 
 ## 0.2.0
 
-- Extension now automatically refreshes the package list when R code loads or unloads a package (library(), require(), pacman::p_load(), detach()).
+- Extension now automatically refreshes the package list when R code loads or unloads a package (library(), require(), pacman::p_load(), detach())
 
 ## 0.1.6
 
@@ -45,7 +45,7 @@ All notable changes to the "positron-r-package-manager" extension will be docume
 
 ## 0.1.2
 
-- Added a toggle to show only loaded packages in the sidebar- Added a toggle in the sidebar to show only loaded packages, improving package navigation
+- Added a toggle to show only loaded packages in the sidebar- Added a toggle in the sidebar to show only loaded packages, improving package navigation (@mburtin)
 
 ## 0.1.1
 
