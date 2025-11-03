@@ -158,6 +158,7 @@ export function getObserver(
  */
 
 export function _installpackages(packages: string, path?: string, installer?: string) {
+    const positron = getPositron();
     if (!installer) { installer = getDefaultInstaller(); }
     // Normalize path for R if provided
     const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';
@@ -172,12 +173,12 @@ export function _installpackages(packages: string, path?: string, installer?: st
 
     const observer = getObserver("Error while installing {0}: {1}", [packages]);
 
-    getPositron().runtime.executeCode(
+    positron.runtime.executeCode(
         'r',
         rCode,
         true,
         undefined,
-        getPositron().RuntimeCodeExecutionMode.Interactive,
+        positron.RuntimeCodeExecutionMode.Interactive,
         undefined,
         observer
     ).then(() => {
