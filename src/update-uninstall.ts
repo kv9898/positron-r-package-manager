@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as positron from 'positron';
+import { getPositron } from './positronApi';
 
 import * as fs from 'fs';
 import * as os from 'os';
@@ -17,6 +17,7 @@ import { getFilterRedundant, getObserver, _installpackages, getDefaultInstaller,
  * @returns A Promise that resolves when the uninstallation is complete.
  */
 export async function uninstallPackage(item: RPackageItem | undefined, sidebarProvider: SidebarProvider): Promise<void> {
+    const positron = getPositron();
     await refreshPackages(sidebarProvider);
     if (!item) {
         const all = sidebarProvider.getPackages?.();
@@ -109,6 +110,7 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
  */
 
 export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
+    const positron = getPositron();
     await refreshPackages(sidebarProvider);
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`);
     const rTmpPath = tmpPath.replace(/\\/g, '/');

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as positron from 'positron';
+import { getPositron } from './positronApi';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -24,6 +24,7 @@ import { getObserver, waitForFile } from './utils';
  */
 
 export async function refreshPackages(sidebarProvider: SidebarProvider): Promise<void> {
+  const positron = getPositron();
   // Check if an R runtime is registered, only proceed if it is
   const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
   if (!hasR) {

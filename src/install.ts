@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as positron from 'positron';
+import { getPositron } from './positronApi';
 
 import * as fs from 'fs';
 import * as os from 'os';
@@ -36,6 +36,7 @@ export async function installPackages(): Promise<void> {
 }
 
 async function getLibPaths(): Promise<string[]> {
+    const positron = getPositron();
 
     const tmpPath = path.join(os.tmpdir(), `r_libPaths_${Date.now()}.json`);
     const rTmpPath = tmpPath.replace(/\\/g, '/');
@@ -128,6 +129,7 @@ async function installFromCran(libPath: string): Promise<void> {
 }
 
 async function installFromGithub(libPath: string): Promise<void> {
+    const positron = getPositron();
     const repo = await vscode.window.showInputBox({
         title: vscode.l10n.t('Install from GitHub'),
         prompt: vscode.l10n.t('Enter GitHub repo (e.g., tidyverse/ggplot2 or user/repo@v1.2.3)'),
@@ -160,6 +162,7 @@ async function installFromGithub(libPath: string): Promise<void> {
 }
 
 async function installFromLocal(libPath: string): Promise<void> {
+    const positron = getPositron();
     const result = await vscode.window.showOpenDialog({
         filters: { 'R Packages': ['tar.gz', 'zip'] },
         canSelectMany: false,

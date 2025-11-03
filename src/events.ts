@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as positron from 'positron';
+import { getPositron } from './positronApi';
 
 /**
  * Returns a disposable that listens for the onDidRegisterRuntime event.
@@ -25,6 +25,7 @@ import * as positron from 'positron';
  */
 
 export function getChangeForegroundEvent(): vscode.Disposable {
+    const positron = getPositron();
     const ChangeForegroundEvent = positron.runtime.onDidChangeForegroundSession((event) => {
         // Only refresh if the new session is an R session
         if (!event?.startsWith('r-')) { return; };
@@ -43,6 +44,7 @@ export function getChangeForegroundEvent(): vscode.Disposable {
  * @returns {vscode.Disposable} A disposable that unregisters the event listener.
  */
 export function getLoadLibraryEvent(): vscode.Disposable {
+    const positron = getPositron();
     const LoadLibraryEvent = positron.runtime.onDidExecuteCode(event => {
         if (event.languageId !== 'r') { return; };
         if (event.code.includes('library(') || event.code.includes('require(') || event.code.includes('p_load(') || event.code.includes('detach(')) {
