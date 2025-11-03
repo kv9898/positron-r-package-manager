@@ -14,7 +14,8 @@
     "workspace"
   ],
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.96.0",
+    "positron": "^2025.02.0"
   },
   "categories": [
     "Programming Languages",
@@ -165,6 +166,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@posit-dev/positron": "^0.1.8",
     "@types/fuzzaldrin-plus": "^0.6.5",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",

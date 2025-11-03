@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as positron from 'positron';
+import { getPositron } from './positronApi';
 import * as path from 'path';
 import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
@@ -98,6 +98,7 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
      * @param newState The new state of the checkbox.
      */
     handleCheckboxChange(item: RPackageItem, newState: vscode.TreeItemCheckboxState) {
+        const positron = getPositron();
         const isNowChecked = newState === vscode.TreeItemCheckboxState.Checked;
 
         const code = isNowChecked

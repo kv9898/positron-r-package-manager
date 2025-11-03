@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as positron from 'positron';
+import { getPositron, ExecutionObserver } from './positronApi';
 import * as fs from 'fs';
 import { join } from 'path';
 
@@ -70,7 +70,7 @@ export function getObserver(
     template: string,
     templateArguments: (string | number | boolean)[] = [],
     onAfterError?: () => void
-): positron.runtime.ExecutionObserver {
+): ExecutionObserver {
 
     function errorHandling(error: string) {
         const fullArgs = [...templateArguments, error];
@@ -121,9 +121,9 @@ export function getObserver(
                 restartLabel
             ).then(selection => {
                 if (selection === restartLabel) {
-                    positron.runtime.getForegroundSession().then((session) => {
+                    getPositron().runtime.getForegroundSession().then((session) => {
                         if (session?.metadata.sessionId.startsWith('r-')) {
-                            positron.runtime.restartSession(session?.metadata.sessionId);
+                            getPositron().runtime.restartSession(session?.metadata.sessionId);
                         } else {
                             vscode.window.showWarningMessage(
                                 vscode.l10n.t("No active R session found in the foreground. Please restart R manually.")
@@ -138,7 +138,7 @@ export function getObserver(
         }
     }
 
-    const observer: positron.runtime.ExecutionObserver = {
+    const observer: ExecutionObserver = {
         // onError: (error: string) => {
         //     errorHandling(stripAnsi(error));
         // },
@@ -158,6 +158,7 @@ export function getObserver(
  */
 
 export function _installpackages(packages: string, path?: string, installer?: string) {
+    const positron = getPositron();
     if (!installer) { installer = getDefaultInstaller(); }
     // Normalize path for R if provided
     const libOption = path ? `, lib = "${path.replace(/\\/g, '/')}"` : '';

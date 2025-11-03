@@ -25,9 +25,7 @@ const extensionConfig = {
     // modules added here also need to be added in the .vscodeignore file
   },
   resolve: {
-    alias: {
-      positron: path.resolve(__dirname, "positron-dts/positron.d.ts"), // Add the alias here
-    },
+    alias: {},
     extensions: [".ts", ".js"],
   },
   module: {

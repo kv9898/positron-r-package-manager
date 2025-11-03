@@ -189,6 +189,11 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@posit-dev/positron@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@posit-dev/positron/-/positron-0.1.8.tgz#3dc7760d30fab6db8243a575ab650cefe0797601"
+  integrity sha512-pIHdlkCb4BWgTovPS/AXEcoPXEXqafaJ3nQWAzArHCV+sZZpxOWLMYrKpBDXBM4piaggQ7wtvMaw/LI4ZaePSw==
+
 "@types/eslint-scope@^3.7.7":
   version "3.7.7"
   resolved "https://registry.yarnpkg.com/@types/eslint-scope/-/eslint-scope-3.7.7.tgz#3108bd5f18b0cdb277c867b3dd449c9ed7079ac5"
