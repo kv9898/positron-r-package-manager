@@ -311,19 +311,57 @@ function parsePackageUpdateJson(tmpPath: string): { Package: string; LibPath: st
 async function promptPackageUpdateSelection(
     parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[]
 ): Promise<typeof parsed | undefined> {
+    // Define the NEWS button
+    const newsButton: vscode.QuickInputButton = {
+        iconPath: new vscode.ThemeIcon('book'),
+        tooltip: vscode.l10n.t('View package NEWS')
+    };
+
     const items = parsed.map(pkg => ({
         label: `${pkg.Package}  (${pkg.Installed} → ${pkg.ReposVer})`,
         description: pkg.LibPath,
         picked: true,
+        buttons: [newsButton],
         ...pkg
     }));
 
-    const selected = await vscode.window.showQuickPick(items, {
-        title: vscode.l10n.t('Select R packages to update'),
-        canPickMany: true,
-        placeHolder: vscode.l10n.t('Choose package installs to update'),
-        ignoreFocusOut: true
+    const quickPick = vscode.window.createQuickPick();
+    quickPick.items = items;
+    quickPick.canSelectMany = true;
+    quickPick.title = vscode.l10n.t('Select R packages to update');
+    quickPick.placeholder = vscode.l10n.t('Choose package installs to update');
+    quickPick.ignoreFocusOut = true;
+    quickPick.selectedItems = items; // Pre-select all items
+
+    // Handle button clicks
+    quickPick.onDidTriggerItemButton((event) => {
+        const item = event.item as typeof items[0];
+        const encodedPackageName = encodeURIComponent(item.Package);
+        const newsUrl = `https://cran.rstudio.com/web/packages/${encodedPackageName}/news/news.html`;
+        vscode.env.openExternal(vscode.Uri.parse(newsUrl));
     });
 
-    return selected;
+    return new Promise((resolve) => {
+        let resolved = false;
+
+        quickPick.onDidAccept(() => {
+            if (resolved) { return; }
+            resolved = true;
+            const selected = quickPick.selectedItems as typeof items;
+            quickPick.hide();
+            resolve(selected.length > 0 ? Array.from(selected) : undefined);
+        });
+
+        quickPick.onDidHide(() => {
+            if (resolved) {
+                quickPick.dispose();
+                return;
+            }
+            resolved = true;
+            quickPick.dispose();
+            resolve(undefined);
+        });
+
+        quickPick.show();
+    });
 }
