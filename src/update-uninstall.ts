@@ -336,18 +336,28 @@ async function promptPackageUpdateSelection(
     // Handle button clicks
     quickPick.onDidTriggerItemButton((event) => {
         const item = event.item as typeof items[0];
-        const newsUrl = `https://cran.rstudio.com/web/packages/${item.Package}/news/news.html`;
+        const encodedPackageName = encodeURIComponent(item.Package);
+        const newsUrl = `https://cran.rstudio.com/web/packages/${encodedPackageName}/news/news.html`;
         vscode.env.openExternal(vscode.Uri.parse(newsUrl));
     });
 
     return new Promise((resolve) => {
+        let resolved = false;
+
         quickPick.onDidAccept(() => {
+            if (resolved) { return; }
+            resolved = true;
             const selected = quickPick.selectedItems as typeof items;
             quickPick.hide();
             resolve(selected.length > 0 ? Array.from(selected) : undefined);
         });
 
         quickPick.onDidHide(() => {
+            if (resolved) {
+                quickPick.dispose();
+                return;
+            }
+            resolved = true;
             quickPick.dispose();
             resolve(undefined);
         });
