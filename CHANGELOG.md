@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file
 
+## 0.2.4
+
+- Added clickable NEWS button to package update selection dialog (opens the package's NEWS page on CRAN)
+
 ## 0.2.3
 
 - Added renv and dev as a library location (@ntluong95)
