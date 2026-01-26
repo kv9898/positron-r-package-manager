@@ -4,7 +4,6 @@ import * as path from 'path';
 import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
 import { getShowIcons, getAlignColumns } from './utils';
-import { get } from 'http';
 
 export interface RPackageInfo {
     name: string;
