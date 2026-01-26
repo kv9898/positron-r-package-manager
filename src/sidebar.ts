@@ -3,7 +3,8 @@ import { getPositron } from './positronApi';
 import * as path from 'path';
 import { filter } from 'fuzzaldrin-plus';
 import { refreshPackages } from './refresh';
-import { getShowIcons } from './utils';
+import { getShowIcons, getAlignColumns } from './utils';
+import { get } from 'http';
 
 export interface RPackageInfo {
     name: string;
@@ -30,13 +31,16 @@ export class SidebarProvider implements vscode.TreeDataProvider<RPackageItem> {
      */
     refresh(packages: RPackageInfo[]): void {
         this.packages = packages;
-        // Calculate the maximum lengths for alignment
-        this.maxVersionLength = packages.reduce((max, pkg) => Math.max(max, pkg.version.length), 0);
-        this.maxNameLength = packages.reduce((max, pkg) => Math.max(max, pkg.name.length), 0);
 
-        // Restrict the maximum lengths to reasonable values to avoid excessive padding
-        this.maxNameLength = Math.min(this.maxNameLength, 10);
-        this.maxVersionLength = Math.min(this.maxVersionLength, 10);
+        if (getAlignColumns()) {
+            // Calculate the maximum lengths for alignment
+            this.maxVersionLength = packages.reduce((max, pkg) => Math.max(max, pkg.version.length), 0);
+            this.maxNameLength = packages.reduce((max, pkg) => Math.max(max, pkg.name.length), 0);
+
+            // Restrict the maximum lengths to reasonable values to avoid excessive padding
+            this.maxNameLength = Math.min(this.maxNameLength, 10);
+            this.maxVersionLength = Math.min(this.maxVersionLength, 10);
+        }
 
         this._onDidChangeTreeData.fire();
     }
@@ -168,9 +172,14 @@ export class RPackageItem extends vscode.TreeItem {
         // Get location badge\
         const locationBadge = this.getLocationBadge(pkg.locationtype);
 
-        const constrainedNameLength = Math.min(pkg.name.length, maxNameLength);
-        const spacingWidth = Math.max(1, maxNameLength - constrainedNameLength + 1);
-        const paddedVersion = `${'\u2007'.repeat(spacingWidth)}${pkg.version.padEnd(maxVersionLength, '\u2007')}`;
+        let paddedVersion;
+        if (getAlignColumns()) {
+            const constrainedNameLength = Math.min(pkg.name.length, maxNameLength);
+            const spacingWidth = Math.max(1, maxNameLength - constrainedNameLength + 1);
+            paddedVersion = `${'\u2007'.repeat(spacingWidth)}${pkg.version.padEnd(maxVersionLength, '\u2007')}`;
+        } else {
+            paddedVersion = ` ${pkg.version} `;
+        }
 
         this.contextValue = 'rPackage';
 
