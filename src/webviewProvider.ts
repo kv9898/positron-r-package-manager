@@ -233,6 +233,7 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
         }
 
         .package-location {
+            text-align: right;
             color: var(--vscode-descriptionForeground);
             font-size: 0.9em;
             overflow: hidden;
