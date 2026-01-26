@@ -10,6 +10,7 @@
     "search.packages": "R: 搜索已安装的包",
     "packages": "包",
     "showIcons": "在包名称旁显示R与包位置类型图标",
+    "alignColumns": "（不完美地）对齐包列表中的列，以提高可读性",
     "defaultInstaller": "默认R包安装器",
     "defaultInstaller::native": "使用install.packages()安装R包",
     "defaultInstaller::pak": "使用pak::pkg_install()安装R包（需要先安装pak包）",

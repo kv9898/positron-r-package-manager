@@ -63,6 +63,12 @@
             "%defaultInstaller::pak%"
           ],
           "description": "%defaultInstaller%"
+        },
+        "positron-r-package-manager.alignColumns": {
+          "type": "boolean",
+          "scope": "application",
+          "default": false,
+          "description": "%alignColumns%"
         }
       }
     },
