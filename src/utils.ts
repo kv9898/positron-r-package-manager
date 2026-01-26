@@ -50,7 +50,7 @@ export function getShowIcons(): boolean {
  */
 export function getAlignColumns(): boolean {
     const config = vscode.workspace.getConfiguration('positron-r-package-manager');
-    return config.get<boolean>('alignColumns', true);
+    return config.get<boolean>('alignColumns', false);
 }
 
 /**
