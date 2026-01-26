@@ -197,7 +197,7 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
 
         .package-row {
             display: grid;
-            grid-template-columns: 24px 1fr 80px 100px 24px;
+            grid-template-columns: 24px 1fr 80px 50px 24px;
             gap: 8px;
             padding: 4px 8px;
             align-items: center;
@@ -271,7 +271,7 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
         /* Header row */
         .header-row {
             display: grid;
-            grid-template-columns: 24px 1fr 80px 100px 24px;
+            grid-template-columns: 24px 1fr 80px 50px 24px;
             gap: 8px;
             padding: 4px 8px;
             font-weight: 600;
