@@ -169,9 +169,6 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
      * Generate the HTML content for the webview
      */
     private _getHtmlForWebview(webview: vscode.Webview): string {
-        // Get the CSS and styling
-        const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'webview.css'));
-
         const nonce = getNonce();
 
         return `<!DOCTYPE html>
@@ -297,6 +294,13 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
     <script nonce="${nonce}">
         const vscode = acquireVsCodeApi();
 
+        // HTML escape helper
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Handle messages from the extension
         window.addEventListener('message', event => {
             const message = event.data;
@@ -335,21 +339,28 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
                 const checkboxState = pkg.loaded ? 'checked' : '';
                 const loadedClass = pkg.loaded ? 'loaded' : '';
                 
+                // Escape HTML to prevent XSS
+                const escapedName = escapeHtml(pkg.name);
+                const escapedTitle = escapeHtml(pkg.title || pkg.name);
+                const escapedVersion = escapeHtml(pkg.version);
+                const escapedLocation = escapeHtml(locationBadge);
+                const escapedLibpath = escapeHtml(pkg.libpath);
+                
                 html += \`
                     <div class="package-row \${loadedClass}" 
-                         data-package-name="\${pkg.name}"
-                         data-libpath="\${pkg.libpath}"
+                         data-package-name="\${escapedName}"
+                         data-libpath="\${escapedLibpath}"
                          data-loaded="\${pkg.loaded}"
-                         title="\${pkg.title || pkg.name}">
+                         title="\${escapedTitle}">
                         <input type="checkbox" 
                                class="checkbox" 
                                \${checkboxState}
-                               onclick="togglePackage(event, '\${pkg.name}', '\${pkg.libpath}', \${pkg.loaded})">
-                        <div class="package-name" onclick="openHelp('\${pkg.name}')">\${pkg.name}</div>
-                        <div class="package-version">\${pkg.version}</div>
-                        <div class="package-location">\${locationBadge}</div>
+                               onclick="togglePackage(event, '\${escapedName}', '\${escapedLibpath}', \${pkg.loaded})">
+                        <div class="package-name" onclick="openHelp('\${escapedName}')">\${escapedName}</div>
+                        <div class="package-version">\${escapedVersion}</div>
+                        <div class="package-location">\${escapedLocation}</div>
                         <button class="uninstall-btn" 
-                                onclick="uninstall(event, '\${pkg.name}', '\${pkg.libpath}')"
+                                onclick="uninstall(event, '\${escapedName}', '\${escapedLibpath}')"
                                 title="Uninstall">×</button>
                     </div>
                 \`;
