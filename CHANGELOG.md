@@ -2,6 +2,10 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file
 
+## 0.2.5
+
+- Reverted to the unaligned sidebar layout by default; alignment can be enabled via a setting.
+
 ## 0.2.4
 
 - Added clickable NEWS button to package update selection dialog (opens the package's NEWS page on CRAN)
