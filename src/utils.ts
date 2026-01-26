@@ -43,6 +43,17 @@ export function getShowIcons(): boolean {
 }
 
 /**
+ * Gets the configuration value of `alignColumns`.
+ * If true, the extension will attempt to align package names and version numbers in the sidebar list.
+ * This setting is for visual convenience, and does not affect the functionality of the extension.
+ * @returns The value of the configuration setting.
+ */
+export function getAlignColumns(): boolean {
+    const config = vscode.workspace.getConfiguration('positron-r-package-manager');
+    return config.get<boolean>('alignColumns', true);
+}
+
+/**
  * Gets the configuration value of `defaultInstaller`.
  *
  * Returns the default package installer to use: "native" for install.packages()
