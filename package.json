@@ -112,7 +112,8 @@
         {
           "id": "rPackageView",
           "name": "R",
-          "icon": "$(book)"
+          "icon": "$(book)",
+          "type": "webview"
         }
       ]
     },

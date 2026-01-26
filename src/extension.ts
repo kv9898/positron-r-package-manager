@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { tryAcquirePositronApi } from '@posit-dev/positron';
 import { setPositron } from './positronApi';
 import { refreshPackages } from './refresh';
-import { SidebarProvider, RPackageItem } from './sidebar';
+import { RPackageWebviewProvider } from './webviewProvider';
 import { installPackages } from './install';
 import { uninstallPackage, updatePackages } from './update-uninstall';
 import { getChangeForegroundEvent, getLoadLibraryEvent } from './events';
@@ -26,7 +26,15 @@ export function activate(context: vscode.ExtensionContext) {
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 
-	const sidebarProvider = new SidebarProvider();
+	const webviewProvider = new RPackageWebviewProvider(context.extensionUri);
+
+	// Register the webview provider
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+			RPackageWebviewProvider.viewType,
+			webviewProvider
+		)
+	);
 
 	// Refresh the package list upon new R runtime or switched R foreground session
 	// const registerRuntimeEvent = getRegisterRuntimeEvent();
@@ -52,27 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		await refreshPackages(sidebarProvider);
-	});
-
-	// handle sidebar
-	const treeView = vscode.window.createTreeView('rPackageView', {
-		treeDataProvider: sidebarProvider,
-		showCollapseAll: false,
-		canSelectMany: false
-	});
-	treeView.onDidChangeCheckboxState((event) => {
-		for (const [item, newState] of event.items) {
-			sidebarProvider.handleCheckboxChange(item, newState);
-		}
-	});
-	treeView.onDidChangeVisibility(async (event) => {
-		if (event.visible) {
-			const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
-			if (hasR) {
-				refreshPackages(sidebarProvider);
-			}
-		}
+		await refreshPackages(webviewProvider);
 	});
 
 	context.subscriptions.push(
@@ -87,11 +75,11 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('positron-r-package-manager.searchPackages', async () => {
 			const input = await vscode.window.showInputBox({
 				prompt: vscode.l10n.t('Search R packages — press Esc to clear filter, Enter to apply'),
-				value: sidebarProvider.getFilter(),
+				value: webviewProvider.getFilter(),
 				placeHolder: vscode.l10n.t('e.g. plot'),
 			});
 
-			sidebarProvider.setFilter(input ?? '');
+			webviewProvider.setFilter(input ?? '');
 
 		}),
 
@@ -100,17 +88,17 @@ export function activate(context: vscode.ExtensionContext) {
 			installPackages();
 		}),
 		// uninstall packages
-		vscode.commands.registerCommand('positron-r-package-manager.uninstallPackage', (item: RPackageItem | undefined) => {
-			uninstallPackage(item, sidebarProvider);
+		vscode.commands.registerCommand('positron-r-package-manager.uninstallPackage', (item: any) => {
+			uninstallPackage(item, webviewProvider);
 		}),
 
 		// update packages
 		vscode.commands.registerCommand('positron-r-package-manager.updatePackages', () => {
-			updatePackages(sidebarProvider);
+			updatePackages(webviewProvider);
 		}),
 
 		vscode.commands.registerCommand('positron-r-package-manager.filterLoadedPackages', () => {
-			sidebarProvider.toggleShowOnlyLoadedPackages();
+			webviewProvider.toggleShowOnlyLoadedPackages();
 		})
 	);
 }

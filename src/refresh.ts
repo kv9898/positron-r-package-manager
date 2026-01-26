@@ -3,27 +3,34 @@ import { getPositron } from './positronApi';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { SidebarProvider, RPackageInfo } from './sidebar';
+import { RPackageInfo } from './sidebar';
 import { getObserver, waitForFile } from './utils';
 
+/**
+ * Common interface for sidebar providers (both tree and webview based)
+ */
+export interface IPackageProvider {
+  refresh(packages: RPackageInfo[]): void;
+  getPackages(): RPackageInfo[];
+}
 
 /**
  * Refreshes the package list displayed in the sidebar by executing R code to retrieve
  * information about installed and loaded R packages. The package information is then
- * passed to the SidebarProvider to update the tree view.
+ * passed to the provider to update the view.
  *
  * This function generates a temporary JSON file containing the package information,
  * including package name, version, library path, location type, and whether it is loaded.
  * It then reads and parses this JSON file, constructs RPackageInfo objects, and uses them
  * to refresh the sidebar.
  *
- * @param sidebarProvider - The SidebarProvider instance responsible for managing the
- *                          R package tree view.
+ * @param provider - The package provider instance responsible for managing the
+ *                   R package view.
  * @returns A promise that resolves when the package list has been successfully refreshed,
  *          or rejects if there is an error in executing the R code or parsing its output.
  */
 
-export async function refreshPackages(sidebarProvider: SidebarProvider): Promise<void> {
+export async function refreshPackages(provider: IPackageProvider): Promise<void> {
   const positron = getPositron();
   // Check if an R runtime is registered, only proceed if it is
   const hasR = await positron.runtime.getRegisteredRuntimes().then((runtimes) => runtimes.some((runtime) => runtime.languageId === 'r'));
@@ -141,7 +148,7 @@ export async function refreshPackages(sidebarProvider: SidebarProvider): Promise
       loaded: pkg.Loaded
     }));
 
-    sidebarProvider.refresh(pkgInfo);
+    provider.refresh(pkgInfo);
   } catch (err) {
     vscode.window.showErrorMessage(
       vscode.l10n.t('Failed to refresh R packages: {0}', err instanceof Error ? err.message : String(err))

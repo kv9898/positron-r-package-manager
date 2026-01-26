@@ -5,32 +5,35 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import { RPackageItem, SidebarProvider } from './sidebar';
-import { refreshPackages } from './refresh';
+import { RPackageInfo } from './sidebar';
+import { refreshPackages, IPackageProvider } from './refresh';
 import { getFilterRedundant, getObserver, _installpackages, getDefaultInstaller, isLibPathWriteable } from './utils';
 
 /**
  * Uninstalls an R package from the active R process.
  * If no item is provided, it will prompt the user to select a package to uninstall.
- * @param item The RPackageItem to uninstall. If undefined, it will prompt the user to select one.
- * @param sidebarProvider The SidebarProvider instance to refresh after uninstalling.
+ * @param item The package item to uninstall. If undefined, it will prompt the user to select one.
+ * @param provider The package provider instance to refresh after uninstalling.
  * @returns A Promise that resolves when the uninstallation is complete.
  */
-export async function uninstallPackage(item: RPackageItem | undefined, sidebarProvider: SidebarProvider): Promise<void> {
+export async function uninstallPackage(item: any, provider: IPackageProvider): Promise<void> {
     const positron = getPositron();
-    await refreshPackages(sidebarProvider);
-    if (!item) {
-        const all = sidebarProvider.getPackages?.();
+    await refreshPackages(provider);
+    
+    let pkg: RPackageInfo;
+    
+    if (!item || !item.pkg) {
+        const all = provider.getPackages();
         if (!all || all.length === 0) {
             vscode.window.showInformationMessage(vscode.l10n.t('No R packages available to uninstall.'));
             return;
         }
 
         const selection = await vscode.window.showQuickPick(
-            all.map(pkg => ({
-                label: `${pkg.name} ${pkg.version} (${pkg.locationtype})`,
-                description: `(${pkg.libpath}) ${pkg.title}`,
-                pkg
+            all.map(p => ({
+                label: `${p.name} ${p.version} (${p.locationtype})`,
+                description: `(${p.libpath}) ${p.title}`,
+                pkg: p
             })),
             {
                 title: vscode.l10n.t('Select a package to uninstall'),
@@ -39,29 +42,29 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
             }
         );
 
-        if (!selection) { return; };
+        if (!selection) { return; }
 
-        item = {
-            pkg: selection.pkg
-        } as RPackageItem;
+        pkg = selection.pkg;
+    } else {
+        pkg = item.pkg;
     }
 
     const confirm = await vscode.window.showWarningMessage(
-        vscode.l10n.t("Uninstall R package {0} {1} ({2})?", item.pkg.name, item.pkg.version, item.pkg.locationtype),
+        vscode.l10n.t("Uninstall R package {0} {1} ({2})?", pkg.name, pkg.version, pkg.locationtype),
         { modal: true },
         vscode.l10n.t('Yes')
     );
 
-    if (confirm !== vscode.l10n.t('Yes')) { return; };
+    if (confirm !== vscode.l10n.t('Yes')) { return; }
 
     const rCode = `
-  if ("${item.pkg.name}" %in% loadedNamespaces()) {
-    detach("package:${item.pkg.name}", unload = TRUE)
+  if ("${pkg.name}" %in% loadedNamespaces()) {
+    detach("package:${pkg.name}", unload = TRUE)
   }
-  remove.packages("${item.pkg.name}", lib="${item.pkg.libpath}")
+  remove.packages("${pkg.name}", lib="${pkg.libpath}")
   `.trim();
 
-    const observer = getObserver("Error while uninstalling {0}: {1}", [item!.pkg.name], () => refreshPackages(sidebarProvider));
+    const observer = getObserver("Error while uninstalling {0}: {1}", [pkg.name], () => refreshPackages(provider));
     positron.runtime.executeCode(
         'r',
         rCode,
@@ -72,17 +75,17 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
         observer
     ).then(
         () => {
-            refreshPackages(sidebarProvider).then(() => {
-                const packages = sidebarProvider.getPackages?.() || [];
+            refreshPackages(provider).then(() => {
+                const packages = provider.getPackages();
 
-                const stillExists = packages.some(pkg =>
-                    pkg.name === item!.pkg.name && pkg.libpath === item!.pkg.libpath
+                const stillExists = packages.some(p =>
+                    p.name === pkg.name && p.libpath === pkg.libpath
                 );
 
                 if (stillExists) {
-                    vscode.window.showErrorMessage(vscode.l10n.t("Failed to uninstall {0} from {1}", item!.pkg.name, item!.pkg.libpath));
+                    vscode.window.showErrorMessage(vscode.l10n.t("Failed to uninstall {0} from {1}", pkg.name, pkg.libpath));
                 } else {
-                    vscode.window.showInformationMessage(vscode.l10n.t("✅ Uninstalled {0}", item!.pkg.name));
+                    vscode.window.showInformationMessage(vscode.l10n.t("✅ Uninstalled {0}", pkg.name));
                 }
             }).catch(err => {
                 vscode.window.showErrorMessage(vscode.l10n.t("Error refreshing packages: {0}", err));
@@ -109,9 +112,9 @@ export async function uninstallPackage(item: RPackageItem | undefined, sidebarPr
  * @returns A promise that resolves when the update process is complete.
  */
 
-export async function updatePackages(sidebarProvider: SidebarProvider): Promise<void> {
+export async function updatePackages(provider: IPackageProvider): Promise<void> {
     const positron = getPositron();
-    await refreshPackages(sidebarProvider);
+    await refreshPackages(provider);
     const tmpPath = path.join(os.tmpdir(), `r_updates_${Date.now()}.json`);
     const rTmpPath = tmpPath.replace(/\\/g, '/');
 
@@ -140,7 +143,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     })()
     `.trim();
 
-    const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(sidebarProvider));
+    const observer = getObserver("Error while fetching updates: {0}", undefined, () => refreshPackages(provider));
 
     // Run R code to dump updates
     let parsed: { Package: string; LibPath: string; Installed: string; ReposVer: string }[] | null = [];
@@ -176,7 +179,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     }
 
     if (getFilterRedundant()) {
-        const allInstalled = sidebarProvider.getPackages?.() || [];
+        const allInstalled = provider.getPackages();
 
         parsed = parsed.filter(outdated => {
             const others = allInstalled.filter(p => p.name === outdated.Package);
@@ -258,7 +261,7 @@ export async function updatePackages(sidebarProvider: SidebarProvider): Promise<
     );
 
     vscode.window.showInformationMessage(vscode.l10n.t("✅ Updated {0} R package(s) in-place", selected.length));
-    refreshPackages(sidebarProvider);
+    refreshPackages(provider);
 }
 
 /**
