@@ -355,13 +355,11 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
                          title="\${escapedTitle}">
                         <input type="checkbox" 
                                class="checkbox" 
-                               \${checkboxState}
-                               onclick="togglePackage(event, '\${escapedName}', '\${escapedLibpath}', \${pkg.loaded})">
-                        <div class="package-name" onclick="openHelp('\${escapedName}')">\${escapedName}</div>
+                               \${checkboxState}>
+                        <div class="package-name">\${escapedName}</div>
                         <div class="package-version">\${escapedVersion}</div>
                         <div class="package-location">\${escapedLocation}</div>
                         <button class="uninstall-btn" 
-                                onclick="uninstall(event, '\${escapedName}', '\${escapedLibpath}')"
                                 title="Uninstall">×</button>
                     </div>
                 \`;
@@ -384,37 +382,54 @@ export class RPackageWebviewProvider implements vscode.WebviewViewProvider {
             return locationType;
         }
 
-        function togglePackage(event, packageName, libpath, isLoaded) {
-            event.stopPropagation();
-            if (isLoaded) {
+        function handleClick(event) {
+            const target = event.target;
+            const row = target.closest('.package-row');
+            if (!row) {
+                return;
+            }
+
+            const packageName = row.dataset.packageName;
+            const libpath = row.dataset.libpath;
+            const isLoaded = row.dataset.loaded === 'true';
+
+            if (target.classList.contains('checkbox')) {
+                event.stopPropagation();
+                if (isLoaded) {
+                    vscode.postMessage({
+                        type: 'unloadPackage',
+                        packageName: packageName
+                    });
+                } else {
+                    vscode.postMessage({
+                        type: 'loadPackage',
+                        packageName: packageName,
+                        libpath: libpath
+                    });
+                }
+                return;
+            }
+
+            if (target.classList.contains('uninstall-btn')) {
+                event.stopPropagation();
                 vscode.postMessage({
-                    type: 'unloadPackage',
-                    packageName: packageName
-                });
-            } else {
-                vscode.postMessage({
-                    type: 'loadPackage',
+                    type: 'uninstallPackage',
                     packageName: packageName,
                     libpath: libpath
+                });
+                return;
+            }
+
+            if (target.classList.contains('package-name')) {
+                vscode.postMessage({
+                    type: 'openHelp',
+                    packageName: packageName
                 });
             }
         }
 
-        function uninstall(event, packageName, libpath) {
-            event.stopPropagation();
-            vscode.postMessage({
-                type: 'uninstallPackage',
-                packageName: packageName,
-                libpath: libpath
-            });
-        }
-
-        function openHelp(packageName) {
-            vscode.postMessage({
-                type: 'openHelp',
-                packageName: packageName
-            });
-        }
+        const packageList = document.getElementById('package-list');
+        packageList.addEventListener('click', handleClick);
     </script>
 </body>
 </html>`;
