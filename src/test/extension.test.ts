@@ -47,10 +47,11 @@ suite('Extension Test Suite', () => {
 		sidebarProvider.refresh(packages);
 
 		// Verify packages are stored correctly
-		assert.strictEqual(sidebarProvider.getPackages().length, 3);
-		assert.strictEqual(sidebarProvider.getPackages()[0].name, 'pkg1');
-		assert.strictEqual(sidebarProvider.getPackages()[1].version, '2.15.3');
-		assert.strictEqual(sidebarProvider.getPackages()[2].loaded, true);
+		const storedPackages = sidebarProvider.getPackages();
+		assert.strictEqual(storedPackages.length, 3);
+		assert.strictEqual(storedPackages[0].name, 'pkg1');
+		assert.strictEqual(storedPackages[1].version, '2.15.3');
+		assert.strictEqual(storedPackages[2].loaded, true);
 	});
 
 	test('SidebarProvider handles empty packages array', () => {
