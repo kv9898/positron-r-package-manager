@@ -115,28 +115,28 @@ This repository includes GitHub Actions workflows specifically designed to work 
 - **Setup Workflow** (`.github/workflows/setup.yml`): Runs before firewall restrictions are enabled to pre-download all necessary dependencies including VS Code test binaries
 - **Test Workflow** (`.github/workflows/test.yml`): Uses cached dependencies to run tests without external network access
 
-The setup workflow resolves the common issue where `yarn run test` fails with `ENOTFOUND update.code.visualstudio.com` by pre-downloading VS Code binaries using `@vscode/test-electron`.
+The setup workflow resolves the common issue where `pnpm run test` fails with `ENOTFOUND update.code.visualstudio.com` by pre-downloading VS Code binaries using `@vscode/test-electron`.
 
 ### Local Development
 
 ```bash
 # Install dependencies
-yarn install --frozen-lockfile
+pnpm install --frozen-lockfile
 
 # Build extension (development mode)
-yarn run compile
+pnpm run compile
 
 # Build extension (production mode)  
-yarn run package
+pnpm run package
 
 # Run linting
-yarn run lint
+pnpm run lint
 
 # Compile tests
-yarn run compile-tests
+pnpm run compile-tests
 
 # Run tests (requires network access to download VS Code)
-yarn run test
+pnpm run test
 ```
 
 ### GitHub Actions Setup
