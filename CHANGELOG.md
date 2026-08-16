@@ -2,6 +2,12 @@
 
 All notable changes to the "positron-r-package-manager" extension will be documented in this file
 
+## 0.2.6
+
+- Updated dependencies to address the `fast-uri` security vulnerability.
+- Migrated the project from Yarn to pnpm and refreshed development dependencies.
+- Updated packaging, debugging, setup, and development documentation.
+
 ## 0.2.5
 
 - Reverted to the unaligned sidebar layout by default; alignment can be enabled via a setting.
