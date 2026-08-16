@@ -129,6 +129,9 @@ pnpm run compile
 # Build extension (production mode)  
 pnpm run package
 
+# Package the extension as a VSIX
+vsce package --no-dependencies
+
 # Run linting
 pnpm run lint
 
@@ -138,6 +141,8 @@ pnpm run compile-tests
 # Run tests (requires network access to download VS Code)
 pnpm run test
 ```
+
+Use `--no-dependencies` because the extension bundle includes its runtime code and `vsce`'s dependency check expects an npm-style installation, which is not compatible with this pnpm setup.
 
 ### GitHub Actions Setup
 
