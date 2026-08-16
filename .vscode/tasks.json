@@ -4,9 +4,21 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "watch",
-			"problemMatcher": "$ts-webpack-watch",
+			"label": "pnpm: watch",
+			"type": "shell",
+			"command": "pnpm",
+			"args": ["run", "watch"],
+			"problemMatcher": {
+				"owner": "webpack",
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^.*$",
+					"endsPattern": "compiled successfully"
+				}
+			},
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never",
@@ -18,8 +30,10 @@
 			}
 		},
 		{
-			"type": "npm",
-			"script": "watch-tests",
+			"label": "pnpm: watch-tests",
+			"type": "shell",
+			"command": "pnpm",
+			"args": ["run", "watch-tests"],
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
@@ -31,8 +45,8 @@
 		{
 			"label": "tasks: watch-tests",
 			"dependsOn": [
-				"npm: watch",
-				"npm: watch-tests"
+				"pnpm: watch",
+				"pnpm: watch-tests"
 			],
 			"problemMatcher": []
 		}

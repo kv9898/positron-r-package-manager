@@ -4,7 +4,7 @@ This document explains how the GitHub Actions setup workflow resolves firewall i
 
 ## The Problem
 
-When running `yarn run test` in isolated environments, you may encounter this error:
+When running `pnpm run test` in isolated environments, you may encounter this error:
 
 ```
 Failed to download VS Code: getaddrinfo ENOTFOUND update.code.visualstudio.com
@@ -19,7 +19,7 @@ The repository includes a **Setup Workflow** (`.github/workflows/setup.yml`) tha
 ### How It Works
 
 1. **Pre-download Phase**: The setup workflow runs when there's network access
-2. **Dependency Installation**: Installs all yarn dependencies using `yarn install --frozen-lockfile`
+2. **Dependency Installation**: Installs all pnpm dependencies using `pnpm install --frozen-lockfile`
 3. **VS Code Download**: Uses `@vscode/test-electron` to download VS Code binaries to `.vscode-test/`
 4. **Caching**: Caches the downloaded VS Code binaries for future use
 5. **Validation**: Builds extension, compiles tests, and runs linting
@@ -41,7 +41,7 @@ To manually trigger the setup workflow:
 ### What Gets Downloaded
 
 The setup workflow downloads:
-- All Node.js dependencies via `yarn install --frozen-lockfile`
+- All Node.js dependencies via `pnpm install --frozen-lockfile`
 - VS Code stable release binaries (typically ~100-200MB)
 - Extension build artifacts
 
@@ -79,7 +79,7 @@ If you're working on this extension and encounter network issues:
 **Tests still fail after setup**:
 - Ensure `.vscode-test` directory contains VS Code binaries
 - Check the cache was restored correctly
-- Verify yarn dependencies are installed
+- Verify pnpm dependencies are installed
 
 **Cache issues**:
 - The cache key includes `package.json` hash, so dependency changes invalidate the cache
