@@ -8,7 +8,17 @@
 			"type": "shell",
 			"command": "pnpm",
 			"args": ["run", "watch"],
-			"problemMatcher": "$ts-webpack-watch",
+			"problemMatcher": {
+				"owner": "webpack",
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^.*$",
+					"endsPattern": "compiled successfully"
+				}
+			},
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never",
