@@ -23,11 +23,16 @@ jobs:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
+      - name: 📦 Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
       - name: 🧰 Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - name: 🗂️ Cache VS Code test binaries
         uses: actions/cache@v4
@@ -37,14 +42,14 @@ jobs:
           restore-keys: |
             vscode-test-${{ runner.os }}-
 
-      - name: 📦 Install yarn dependencies
-        run: yarn install --frozen-lockfile
+      - name: 📦 Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: 🏗️ Build extension
-        run: yarn run compile
+        run: pnpm run compile
 
       - name: 🧪 Compile tests
-        run: yarn run compile-tests
+        run: pnpm run compile-tests
 
       - name: 📥 Pre-download VS Code for testing (if not cached)
         run: |
@@ -119,16 +124,16 @@ jobs:
           echo "🧪 Running extension tests..."
           # This should now work without trying to download VS Code
           # since the binaries were pre-downloaded in the same job
-          yarn run test || echo "⚠️ Tests may fail in isolated environments - this is expected"
+          pnpm run test || echo "⚠️ Tests may fail in isolated environments - this is expected"
 
       - name: 🔍 Run linting
-        run: yarn run lint
+        run: pnpm run lint
 
       - name: 📋 Summary
         run: |
           echo "🎉 CI completed successfully!"
           echo "📋 Summary:"
-          echo "  ✅ Dependencies installed with yarn"
+          echo "  ✅ Dependencies installed with pnpm"
           echo "  ✅ Extension compiled"
           echo "  ✅ Tests compiled"
           echo "  ✅ VS Code test binaries ready"
@@ -137,7 +142,7 @@ jobs:
           
           echo ""
           echo "🔧 This workflow ensures:"
-          echo "  - All yarn dependencies are installed"
+          echo "  - All pnpm dependencies are installed"
           echo "  - VS Code test binaries are pre-downloaded"
           echo "  - Extension builds successfully"
           echo "  - Tests can run without network access to update.code.visualstudio.com"
